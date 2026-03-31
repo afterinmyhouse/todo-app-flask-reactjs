@@ -35,18 +35,48 @@ const buttonVariants = cva(
 );
 
 export interface ButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
+  extends React.ComponentPropsWithoutRef<"button">,
     VariantProps<typeof buttonVariants> {
   asChild?: boolean;
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, asChild = false, ...props }, ref) => {
+  (
+    {
+      className,
+      variant,
+      size,
+      asChild = false,
+      disabled,
+      onClick,
+      tabIndex,
+      ...props
+    },
+    ref,
+  ) => {
     const Comp = asChild ? Slot : "button";
+
+    // When `asChild` is used, `disabled` is not a native concept for most elements.
+    // We add minimal semantics and prevent clicks to match user expectations.
+    const composedOnClick: React.MouseEventHandler<HTMLElement> = (event) => {
+      if (asChild && disabled) {
+        event.preventDefault();
+        event.stopPropagation();
+        return;
+      }
+
+      onClick?.(event as unknown as React.MouseEvent<HTMLButtonElement>);
+    };
+
     return (
       <Comp
         className={cn(buttonVariants({ variant, size, className }))}
-        ref={ref}
+        ref={ref as any}
+        aria-disabled={asChild && disabled ? true : undefined}
+        data-disabled={asChild && disabled ? "" : undefined}
+        tabIndex={asChild && disabled ? -1 : tabIndex}
+        onClick={composedOnClick}
+        disabled={asChild ? undefined : disabled}
         {...props}
       />
     );
