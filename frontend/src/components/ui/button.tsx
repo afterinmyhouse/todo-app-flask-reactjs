@@ -4,6 +4,9 @@ import { cva, type VariantProps } from "class-variance-authority";
 
 import { cn } from "@/lib/utils";
 
+// Centralized styling API for buttons.
+// `cva` gives us a typed set of "variants" (visual style) and "size" options while keeping
+// the base class list in one place.
 const buttonVariants = cva(
   "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
   {
@@ -37,6 +40,8 @@ const buttonVariants = cva(
 export interface ButtonProps
   extends React.ComponentPropsWithoutRef<"button">,
     VariantProps<typeof buttonVariants> {
+  // When true, the Button renders a Radix `Slot` so the *child* becomes the underlying element.
+  // This is useful to style links/other components as buttons, but it changes element semantics.
   asChild?: boolean;
 }
 
@@ -54,6 +59,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     },
     ref,
   ) => {
+    // `Slot` forwards props to the child element; otherwise render a native `<button>`.
     const Comp = asChild ? Slot : "button";
 
     // When `asChild` is used, `disabled` is not a native concept for most elements.
@@ -71,11 +77,15 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     return (
       <Comp
         className={cn(buttonVariants({ variant, size, className }))}
+        // With `asChild`, the underlying element may not be a <button>. We keep the public ref
+        // type ergonomic for the common case and cast for Slot compatibility.
         ref={ref as any}
+        // Make "disabled" discoverable for assistive tech and styling when the element isn't a <button>.
         aria-disabled={asChild && disabled ? true : undefined}
         data-disabled={asChild && disabled ? "" : undefined}
         tabIndex={asChild && disabled ? -1 : tabIndex}
         onClick={composedOnClick}
+        // Only pass the native `disabled` attribute to real <button> elements.
         disabled={asChild ? undefined : disabled}
         {...props}
       />
