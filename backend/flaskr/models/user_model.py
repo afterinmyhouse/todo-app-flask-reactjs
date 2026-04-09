@@ -18,3 +18,15 @@ class UserModel(db.Model):
     tasks = relationship(
         "TaskModel", back_populates="user", cascade="all, delete-orphan"
     )
+
+    projects = relationship(
+        "ProjectModel", back_populates="user", cascade="all, delete-orphan"
+    )
+
+    task_comments = relationship(
+        "TaskCommentModel", back_populates="user", cascade="all, delete-orphan"
+    )
+
+    preferences = relationship(
+        "UserPreferenceModel", back_populates="user", uselist=False, cascade="all, delete-orphan"
+    )

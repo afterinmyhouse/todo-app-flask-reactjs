@@ -29,3 +29,12 @@ class TaskModel(db.Model):
 
     tag_id: Mapped[int] = mapped_column(ForeignKey("tags.id"), nullable=False)
     tag = relationship("TagModel", back_populates="tasks")
+
+    project_id: Mapped[int] = mapped_column(
+        ForeignKey("projects.id"), nullable=True, index=True
+    )
+    project = relationship("ProjectModel", back_populates="tasks")
+
+    comments = relationship(
+        "TaskCommentModel", back_populates="task", cascade="all, delete-orphan"
+    )
