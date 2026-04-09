@@ -1,48 +1,40 @@
-from flaskr import create_app
-from flaskr.models.tag_model import TagModel
-from flaskr.db import db
+from flaskr.mongo import get_db
 
 
 def seed_tags():
-    try:
-        tag_names = [
-            "Work",
-            "Study",
-            "Free Time",
-            "Exercise",
-            "Health",
-            "Travel",
-            "Hobbies",
-            "Shopping",
-            "Finances",
-            "Family",
-            "Chores",
-            "Friends",
-            "Meetings",
-            "Goals",
-            "Projects",
-            "Learning",
-            "Entertainment",
-            "Relaxation",
-            "Urgent",
-            "Miscellaneous",
-        ]
+    tag_names = [
+        "Work",
+        "Study",
+        "Free Time",
+        "Exercise",
+        "Health",
+        "Travel",
+        "Hobbies",
+        "Shopping",
+        "Finances",
+        "Family",
+        "Chores",
+        "Friends",
+        "Meetings",
+        "Goals",
+        "Projects",
+        "Learning",
+        "Entertainment",
+        "Relaxation",
+        "Urgent",
+        "Miscellaneous",
+    ]
 
-        app = create_app()
+    db = get_db()
+    inserted = 0
+    for name in tag_names:
+        # Idempotent: don't insert duplicates
+        if db.tags.find_one({"name": name}):
+            continue
+        db.tags.insert_one({"name": name})
+        inserted += 1
 
-        with app.app_context():
-            for tag_name in tag_names:
-                data = {"name": tag_name}
-
-                new_tag = TagModel(**data)
-
-                db.session.add(new_tag)
-                db.session.commit()
-
-            print(f"Inserted new tags")
-    except Exception as err:
-        db.session.rollback()
-        print(f"Error while seeding: {err}")
+    print(f"Inserted {inserted} new tags")
 
 
 if __name__ == "__main__":

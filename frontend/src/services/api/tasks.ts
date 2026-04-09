@@ -15,13 +15,13 @@ export const createTaskAPI = async (data: { formData: TCreateFormSchema }) => {
 
 export const updateTaskAPI = async (data: {
   formData: TEditFormSchema;
-  taskId: number;
+  taskId: string;
 }) => {
   const { formData, taskId } = data;
   await api.put(`/api/v1/tasks/${taskId}`, formData);
 };
 
-export const deleteTaskAPI = async (data: { taskId: number }) => {
+export const deleteTaskAPI = async (data: { taskId: string }) => {
   const { taskId } = data;
   await api.delete(`/api/v1/tasks/${taskId}`);
 };

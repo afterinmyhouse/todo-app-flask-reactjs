@@ -1,32 +1,19 @@
 from flask_smorest import abort
-from sqlalchemy import select
-from sqlalchemy.exc import SQLAlchemyError
-from flaskr.db import db
-from flaskr.models.tag_model import TagModel
+from flaskr.mongo import get_db
 
 
 class TagController:
     @staticmethod
     def get_all():
-        try:
-            return db.session.execute(select(TagModel).limit(15)).scalars().all()
-        except SQLAlchemyError:
-            abort(500, message="Internal server error while fetching tags")
+        db = get_db()
+        tags = list(db.tags.find({}, {"name": 1}).limit(50))
+        return [{"id": str(t["_id"]), "name": t["name"]} for t in tags]
 
     @staticmethod
     def create(data):
-        try:
-            tag_registered = db.session.execute(
-                select(TagModel).where(TagModel.name == data["name"])
-            ).scalar_one_or_none()
+        db = get_db()
+        if db.tags.find_one({"name": data["name"]}):
+            abort(409, message="Tag already registered")
 
-            if tag_registered:
-                abort(409, message="Tag already registered")
-
-            new_tag = TagModel(**data)
-
-            db.session.add(new_tag)
-            db.session.commit()
-        except SQLAlchemyError:
-            db.session.rollback()
-            abort(500, message="Internal server error while creating tag")
+        result = db.tags.insert_one({"name": data["name"]})
+        return {"id": str(result.inserted_id), "name": data["name"]}

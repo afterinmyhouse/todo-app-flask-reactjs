@@ -16,6 +16,7 @@ markupsafe==3.0.2; python_version >= '3.9'
 marshmallow==3.23.1; python_version >= '3.9'
 packaging==24.2; python_version >= '3.8'
 pyjwt==2.10.0; python_version >= '3.9'
+pymongo==4.10.1
 python-dotenv==1.0.1; python_version >= '3.8'
 sqlalchemy==2.0.36; python_version >= '3.7'
 typing-extensions==4.12.2; python_version >= '3.8'

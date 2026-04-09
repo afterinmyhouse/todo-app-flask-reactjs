@@ -1,5 +1,5 @@
 export type Tag = {
-  id: number;
+  id: string;
   name: string;
 };
 
@@ -9,7 +9,7 @@ export type Status =
   | "TaskStatus.COMPLETED";
 
 export type Task = {
-  id: number;
+  id: string;
   title: string;
   content: string;
   status: Status;

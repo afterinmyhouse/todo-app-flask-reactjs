@@ -11,6 +11,8 @@ class Config(object):
     JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")
     JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=4)
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    MONGO_URI = os.getenv("MONGO_URI", "mongodb://localhost:27017")
+    MONGO_DB_NAME = os.getenv("MONGO_DB_NAME", "todoapp")
     API_TITLE = "Rest API"
     API_VERSION = "v1"
     OPENAPI_VERSION = "3.0.2"

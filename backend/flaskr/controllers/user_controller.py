@@ -1,70 +1,57 @@
 from flask_jwt_extended import get_jwt_identity
 from flask_smorest import abort
-from sqlalchemy import select
-from sqlalchemy.exc import NoResultFound, SQLAlchemyError
-from flaskr.db import db
-from flaskr.models.user_model import UserModel
 from flaskr.utils import generate_password
+from flaskr.mongo import get_db
+from bson import ObjectId
 
 
 class UserController:
     @staticmethod
     def get_all():
-        try:
-            return db.session.execute(select(UserModel)).scalars().all()
-        except SQLAlchemyError:
-            abort(500, message="Internal server error while fetching users")
+        db = get_db()
+        users = list(db.users.find({}, {"username": 1, "email": 1}))
+        return [{"id": str(u["_id"]), "username": u["username"], "email": u["email"]} for u in users]
 
     @staticmethod
     def get_by_id(user_id):
+        db = get_db()
         try:
-            return db.session.execute(
-                select(UserModel).where(UserModel.id == user_id)
-            ).scalar_one()
-        except NoResultFound:
+            oid = ObjectId(user_id)
+        except Exception:
             abort(404, message="User not found")
-        except SQLAlchemyError:
-            abort(500, message="Internal server error while fetching user")
+
+        user = db.users.find_one({"_id": oid}, {"username": 1, "email": 1})
+        if not user:
+            abort(404, message="User not found")
+        return {"id": str(user["_id"]), "username": user["username"], "email": user["email"]}
 
     @staticmethod
     def create(data):
-        try:
-            user_registered = db.session.execute(
-                select(UserModel).where(
-                    (UserModel.username == data["username"])
-                    | (UserModel.email == data["email"])
-                )
-            ).scalar_one_or_none()
+        db = get_db()
 
-            if user_registered:
-                if user_registered.username == data["username"]:
-                    abort(409, message="Username already registered")
-                if user_registered.email == data["email"]:
-                    abort(409, message="Email already registered")
+        if db.users.find_one({"username": data["username"]}):
+            abort(409, message="Username already registered")
+        if db.users.find_one({"email": data["email"]}):
+            abort(409, message="Email already registered")
 
-            new_user = UserModel(**data)
-
-            new_user.password = generate_password(data["password"])
-
-            db.session.add(new_user)
-            db.session.commit()
-        except SQLAlchemyError:
-            db.session.rollback()
-            abort(500, message="Internal server error while creating user")
+        doc = {
+            "username": data["username"],
+            "email": data["email"],
+            "password": generate_password(data["password"]),
+        }
+        result = db.users.insert_one(doc)
+        return {"id": str(result.inserted_id), "username": data["username"], "email": data["email"]}
 
     @staticmethod
     def delete():
+        db = get_db()
+        user_id = get_jwt_identity()
         try:
-            user_id = get_jwt_identity()
-
-            user = db.session.execute(
-                select(UserModel).where(UserModel.id == user_id)
-            ).scalar_one()
-
-            db.session.delete(user)
-            db.session.commit()
-        except NoResultFound:
+            oid = ObjectId(user_id)
+        except Exception:
             abort(404, message="User not found")
-        except SQLAlchemyError:
-            db.session.rollback()
-            abort(500, message="Internal server error while deleting user")
+
+        result = db.users.delete_one({"_id": oid})
+        if result.deleted_count == 0:
+            abort(404, message="User not found")
+        return ""

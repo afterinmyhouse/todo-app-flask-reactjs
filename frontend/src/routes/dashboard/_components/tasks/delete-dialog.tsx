@@ -15,7 +15,7 @@ import { Trash } from "lucide-react";
 import { toast } from "sonner";
 
 interface IProps {
-  taskId: number;
+  taskId: string;
 }
 
 export const DeleteDialog = ({ taskId }: IProps) => {

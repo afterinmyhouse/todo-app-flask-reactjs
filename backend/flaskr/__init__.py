@@ -1,9 +1,6 @@
-import flaskr.models
-
 from flask import Flask
 from config import DevelopmentConfig
-from flaskr.extensions import migrate, api, cors, jwt
-from flaskr.db import db
+from flaskr.extensions import api, cors, jwt
 
 from flaskr.routes.auth_route import bp as auth_route
 from flaskr.routes.user_route import bp as user_route
@@ -19,8 +16,6 @@ def create_app(test_config=None):
     else:
         app.config.from_object(test_config)
 
-    db.init_app(app)
-    migrate.init_app(app, db)
     api.init_app(app)
     cors.init_app(app)
     jwt.init_app(app)
