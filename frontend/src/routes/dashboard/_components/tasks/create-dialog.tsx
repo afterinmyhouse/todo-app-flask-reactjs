@@ -13,7 +13,7 @@ export const CreateDialog = () => {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button className="font-medium" size="sm">
+        <Button className="font-medium w-full sm:w-auto" size="sm">
           Create a new task
         </Button>
       </DialogTrigger>
