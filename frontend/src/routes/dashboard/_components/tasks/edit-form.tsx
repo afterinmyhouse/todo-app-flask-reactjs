@@ -22,7 +22,6 @@ import { useForm } from "react-hook-form";
 import { EditFormSchema, TEditFormSchema } from "@/schemas/task-schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
-import { useAuthStore } from "@/stores/auth-store";
 import { Status, Task } from "@/types/types";
 import { useUpdateTaskMutation } from "@/services/mutations/tasks";
 
@@ -32,7 +31,6 @@ interface IProps {
 
 export const EditForm = ({ task }: IProps) => {
   const mutation = useUpdateTaskMutation();
-  const { token } = useAuthStore();
   const allStatus: { value: string; name: string }[] = [
     { value: "PENDING", name: "Pending" },
     { value: "IN_PROGRESS", name: "In Progress" },
@@ -59,7 +57,7 @@ export const EditForm = ({ task }: IProps) => {
   } = form;
 
   const onSubmit = async (formData: TEditFormSchema) => {
-    await mutation.mutateAsync({ taskId: task.id, token, formData });
+    await mutation.mutateAsync({ taskId: task.id, formData });
 
     toast.success("Task successfully updated");
   };

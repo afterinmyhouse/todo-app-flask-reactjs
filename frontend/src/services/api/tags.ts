@@ -1,8 +1,8 @@
 import { Tag } from "@/types/types";
-import axios from "axios";
+import { api } from "./client";
 
 export const getTagsAPI = async () => {
-  const response = await axios.get<Tag[]>("http://localhost:5000/api/v1/tags");
+  const response = await api.get<Tag[]>("/api/v1/tags");
 
   return response.data;
 };

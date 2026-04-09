@@ -18,13 +18,9 @@ vi.mock("@/stores/auth-store", () => ({
   useAuthStore: () => ({ signIn: vi.fn() }),
 }));
 
-vi.mock("axios", () => {
-  class AxiosError extends Error {}
-  return {
-    default: { post: vi.fn() },
-    AxiosError,
-  };
-});
+vi.mock("@/services/api/client", () => ({
+  api: { post: vi.fn() },
+}));
 
 describe("SignInForm", () => {
   it("renders email + password fields and submit button", () => {

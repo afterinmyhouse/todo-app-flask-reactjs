@@ -23,12 +23,10 @@ import { useGetTagsQuery } from "@/services/queries/tags";
 import { CreateFormSchema, TCreateFormSchema } from "@/schemas/task-schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
-import { useAuthStore } from "@/stores/auth-store";
 import { useCreateTaskMutation } from "@/services/mutations/tasks";
 
 export const CreateForm = () => {
   const { data: tags = [] } = useGetTagsQuery();
-  const { token } = useAuthStore();
   const mutation = useCreateTaskMutation();
   const form = useForm<TCreateFormSchema>({
     resolver: zodResolver(CreateFormSchema),
@@ -43,7 +41,7 @@ export const CreateForm = () => {
   } = form;
 
   const onSubmit = async (formData: TCreateFormSchema) => {
-    await mutation.mutateAsync({ token, formData });
+    await mutation.mutateAsync({ formData });
 
     toast.success("Task successfully created");
 
