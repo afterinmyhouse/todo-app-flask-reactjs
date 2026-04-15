@@ -2,7 +2,7 @@
   "info": {
     "_postman_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
     "name": "TodoApp API",
-    "description": "# TodoApp Flask API (`/api/v1`)\n\n**Import:** Postman → **Import** → this file.\n\n**Prerequisites:** Backend running (default `http://localhost:5000`). MongoDB populated; run `python seed.py` from `backend/` for tags.\n\n**Flow:**\n1. **Users → Create user** (or use existing) then **Auth → Sign in** — saves `accessToken`.\n2. **Tags → List tags** — test script saves first tag to `tagId`.\n3. **Tasks → Create task** then **Tasks → List my tasks** — script saves first task to `taskId`.\n\n**OpenAPI:** `GET {{baseUrl}}/docs`\n\nJWT: `Authorization: Bearer {{accessToken}}` on protected routes.",
+    "description": "# TodoApp Flask API (`/api/v1`)\n\n**Import:** Postman → **Import** → this file.\n\n**Prerequisites:** Backend running (default `http://localhost:5000`). MongoDB populated; run `python seed.py` from `backend/` for tags.\n\n**Flow:**\n1. **Auth → Register** (or **Users → Create user** then **Sign in**) — Register saves `accessToken`, `userId`.\n2. **Tags → List tags** — test script saves first tag to `tagId`.\n3. **Tasks → Create task** then **Tasks → List my tasks** — script saves first task to `taskId`.\n\n**OpenAPI:** `GET {{baseUrl}}/docs`\n\nJWT: `Authorization: Bearer {{accessToken}}` on protected routes.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -78,6 +78,52 @@
               "_postman_previewlanguage": "json",
               "header": [{ "key": "Content-Type", "value": "application/json" }],
               "body": "{\n  \"message\": \"Incorrect credentials\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Register",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  const j = pm.response.json();",
+                  "  if (j.token) pm.collectionVariables.set('accessToken', j.token);",
+                  "  if (j.id) pm.collectionVariables.set('userId', j.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"newuser\",\n  \"email\": \"newuser@example.com\",\n  \"password\": \"SecurePass123\"\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/auth/register",
+            "description": "Public registration. **201** returns `id`, `username`, `email`, `token` (JWT). Same uniqueness rules as POST /users. **Tests** set `accessToken` and `userId`."
+          },
+          "response": [
+            {
+              "name": "201 Created — user + JWT",
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"id\": \"6708e1f1f1f1f1f1f1f1f1f3\",\n  \"username\": \"carol\",\n  \"email\": \"carol@example.com\",\n  \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2NzA4ZTFmYTFmYTFmYTFmYTFmYTFmYTEiLCJleHAiOjk5OTk5OTk5OTl9.sample-signature\"\n}"
+            },
+            {
+              "name": "409 Conflict",
+              "status": "Conflict",
+              "code": 409,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"message\": \"Email already registered\"\n}"
             }
           ]
         }

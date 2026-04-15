@@ -3,9 +3,17 @@ from marshmallow import Schema, fields, validate
 
 class PlainUserSchema(Schema):
     id = fields.Str(dump_only=True)
-    username = fields.Str(required=True)
+    username = fields.Str(required=True, validate=validate.Length(min=1, max=20))
     email = fields.Email(required=True)
     password = fields.Str(required=True, load_only=True)
+
+
+class PlainRegisterSchema(Schema):
+    """Public self-registration body (same shape as user create, explicit name for OpenAPI)."""
+
+    username = fields.Str(required=True, validate=validate.Length(min=1, max=20))
+    email = fields.Email(required=True)
+    password = fields.Str(required=True, validate=validate.Length(min=1), load_only=True)
 
 
 class PlainSignInSchema(Schema):

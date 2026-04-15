@@ -1,5 +1,6 @@
 from flask_jwt_extended import create_access_token
 from flask_smorest import abort
+from flaskr.controllers.user_controller import UserController
 from flaskr.utils import check_password
 from flaskr.mongo import get_db
 
@@ -16,3 +17,10 @@ class AuthController:
         token = create_access_token(identity=str(user["_id"]))
 
         return {"token": token}
+
+    @staticmethod
+    def register(data):
+        """Create account and return user fields plus JWT (same persistence rules as POST /users)."""
+        created = UserController.create(data)
+        token = create_access_token(identity=created["id"])
+        return {**created, "token": token}

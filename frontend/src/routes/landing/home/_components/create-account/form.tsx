@@ -14,12 +14,16 @@ import {
 } from "@/schemas/auth-schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { api } from "@/services/api/client";
+import { useAuthStore } from "@/stores/auth-store";
 import { AxiosError } from "axios";
 import { LoaderCircle } from "lucide-react";
 import { useForm } from "react-hook-form";
+import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 export const CreateAccountForm = () => {
+  const navigate = useNavigate();
+  const { signIn } = useAuthStore();
   const form = useForm<TCreateAccountFormSchema>({
     resolver: zodResolver(CreateAccountFormSchema),
     defaultValues: { username: "", email: "", password: "" },
@@ -34,11 +38,17 @@ export const CreateAccountForm = () => {
 
   const onSubmit = async (formData: TCreateAccountFormSchema) => {
     try {
-      await api.post("/api/v1/users", formData);
+      const response = await api.post<{
+        id: string;
+        username: string;
+        email: string;
+        token: string;
+      }>("/api/v1/auth/register", formData);
 
-      toast.success("Acount successfully created");
-
+      signIn(response.data.token);
+      toast.success("Account created — you are signed in.");
       reset();
+      navigate("/dashboard");
     } catch (err) {
       if (err instanceof AxiosError) {
         toast.error(err.response?.data.message);

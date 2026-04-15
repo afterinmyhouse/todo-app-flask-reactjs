@@ -1,5 +1,6 @@
-from marshmallow import fields
+from marshmallow import Schema, fields
 from flaskr.schemas.plain_schema import (
+    PlainRegisterSchema,
     PlainSignInSchema,
     PlainTagSchema,
     PlainTaskSchema,
@@ -13,6 +14,19 @@ class UserSchema(PlainUserSchema):
 
 class SignInSchema(PlainSignInSchema):
     pass
+
+
+class RegisterSchema(PlainRegisterSchema):
+    pass
+
+
+class RegisterResponseSchema(Schema):
+    """Returned after successful registration (user record + JWT for immediate session)."""
+
+    id = fields.Str(required=True)
+    username = fields.Str(required=True)
+    email = fields.Email(required=True)
+    token = fields.Str(required=True)
 
 
 class TagSchema(PlainTagSchema):

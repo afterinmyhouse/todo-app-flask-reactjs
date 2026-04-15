@@ -9,7 +9,7 @@ This document describes the **user-facing flows** implemented in the current app
 - **Frontend**
   - Form UI: `frontend/src/routes/landing/home/_components/create-account/form.tsx`
   - Validation: `frontend/src/schemas/auth-schema.ts` (`CreateAccountFormSchema`)
-  - Request: `POST /api/v1/users` using shared API client (`frontend/src/services/api/client.ts`)
+  - Request: `POST /api/v1/auth/register` using shared API client (`frontend/src/services/api/client.ts`); response includes JWT and the app signs the user in and navigates to the dashboard
   - Feedback: success toast + form reset; error toast via Axios error message.
 - **Backend**
   - Route: `backend/flaskr/routes/user_route.py` → `POST /users`
