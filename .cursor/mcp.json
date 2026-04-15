@@ -15,6 +15,11 @@
       "headers": {
         "Authorization": "${env:ATLASSIAN_MCP_AUTHORIZATION}"
       }
+    },
+    "playwright": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@playwright/mcp@latest"]
     }
   }
 }

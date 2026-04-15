@@ -1,0 +1,24 @@
+Playwright MCP — TodoApp (this repo)
+=====================================
+
+Official server: npx @playwright/mcp@latest (see https://playwright.dev/docs/getting-started-mcp)
+
+Before the agent drives the UI
+------------------------------
+1. Backend API: run Flask from backend/ (default http://localhost:5000 — matches VITE_API_BASE_URL).
+2. Frontend: from frontend/ run `npm run dev` — Vite default is usually http://localhost:5173 (confirm in terminal output).
+
+Restart Cursor after editing .cursor/mcp.json. Approve browser tool calls when prompted, or enable MCP auto-run in Cursor settings.
+
+Example agent prompts (copy/paste)
+----------------------------------
+- "Using Playwright MCP: open http://localhost:5173, wait for the landing page, describe visible headings and links."
+- "With Playwright MCP: go to http://localhost:5173, open sign-in, submit invalid credentials, and report the error or toast text shown."
+- "Playwright MCP: after I log in manually once, save storage state if the tool supports it, then reload /dashboard and confirm the tasks section is visible."
+- "Playwright MCP headless smoke: navigate to http://localhost:5173, assert the document title or main h1 contains Todo or similar branding." (If you add --headless to mcp.json args, say so in the prompt.)
+
+Optional mcp.json tweaks (edit .cursor/mcp.json "args" after @playwright/mcp@latest)
+------------------------------------------------------------------------------------
+  "--headless"              Run without a visible window (CI-like).
+  "--browser=firefox"       Use Firefox instead of default Chromium family.
+  "--isolated"              Fresh profile each run (good for clean login tests).
