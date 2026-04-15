@@ -1,0 +1,431 @@
+{
+  "info": {
+    "_postman_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "name": "TodoApp API",
+    "description": "# TodoApp Flask API (`/api/v1`)\n\n**Import:** Postman → **Import** → this file.\n\n**Prerequisites:** Backend running (default `http://localhost:5000`). MongoDB populated; run `python seed.py` from `backend/` for tags.\n\n**Flow:**\n1. **Users → Create user** (or use existing) then **Auth → Sign in** — saves `accessToken`.\n2. **Tags → List tags** — test script saves first tag to `tagId`.\n3. **Tasks → Create task** then **Tasks → List my tasks** — script saves first task to `taskId`.\n\n**OpenAPI:** `GET {{baseUrl}}/docs`\n\nJWT: `Authorization: Bearer {{accessToken}}` on protected routes.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:5000" },
+    { "key": "accessToken", "value": "" },
+    { "key": "userId", "value": "" },
+    { "key": "tagId", "value": "" },
+    { "key": "taskId", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Sign in",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  const j = pm.response.json();",
+                  "  if (j.token) pm.collectionVariables.set('accessToken', j.token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"demo@example.com\",\n  \"password\": \"your-password\"\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/auth/sign-in",
+            "description": "Returns JWT. On success, collection variable `accessToken` is set from the **Tests** script."
+          },
+          "response": [
+            {
+              "name": "200 OK — JWT",
+              "originalRequest": {
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"secret\"\n}"
+                },
+                "url": "{{baseUrl}}/api/v1/auth/sign-in"
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2NzA4ZTFmYTFmYTFmYTFmYTFmYTFmYTEiLCJleHAiOjk5OTk5OTk5OTl9.sample-signature\"\n}"
+            },
+            {
+              "name": "401 Unauthorized",
+              "originalRequest": {
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"wrong@example.com\",\n  \"password\": \"bad\"\n}"
+                },
+                "url": "{{baseUrl}}/api/v1/auth/sign-in"
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"message\": \"Incorrect credentials\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "List users",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/users",
+            "description": "Public. Returns `id`, `username`, `email` per user (no passwords)."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/users"
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "[\n  {\n    \"id\": \"6708e1f1f1f1f1f1f1f1f1f1\",\n    \"username\": \"alice\",\n    \"email\": \"alice@example.com\"\n  },\n  {\n    \"id\": \"6708e1f1f1f1f1f1f1f1f1f2\",\n    \"username\": \"bob\",\n    \"email\": \"bob@example.com\"\n  }\n]"
+            }
+          ]
+        },
+        {
+          "name": "Create user",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  const j = pm.response.json();",
+                  "  if (j.id) pm.collectionVariables.set('userId', j.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"newuser\",\n  \"email\": \"newuser@example.com\",\n  \"password\": \"SecurePass123\"\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/users",
+            "description": "Registers a user. `password` is write-only (never returned). On 201, `userId` is saved to collection variables."
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "originalRequest": {
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"username\": \"carol\",\n  \"email\": \"carol@example.com\",\n  \"password\": \"SecurePass123\"\n}"
+                },
+                "url": "{{baseUrl}}/api/v1/users"
+              },
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"id\": \"6708e1f1f1f1f1f1f1f1f1f3\",\n  \"username\": \"carol\",\n  \"email\": \"carol@example.com\"\n}"
+            },
+            {
+              "name": "409 Conflict — duplicate",
+              "status": "Conflict",
+              "code": 409,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"message\": \"Username already registered\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get user by id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/users/{{userId}}",
+            "description": "Replace `userId` with a 24-char hex MongoDB ObjectId string, or run **Create user** first."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"id\": \"6708e1f1f1f1f1f1f1f1f1f1\",\n  \"username\": \"alice\",\n  \"email\": \"alice@example.com\"\n}"
+            },
+            {
+              "name": "404 Not Found",
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"message\": \"User not found\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Delete my account",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/users/account",
+            "description": "**JWT required.** Deletes the user identified by the token subject. Returns **204** with empty body on success."
+          },
+          "response": [
+            {
+              "name": "204 No Content",
+              "status": "No Content",
+              "code": 204,
+              "_postman_previewlanguage": "text",
+              "header": [],
+              "body": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Tags",
+      "item": [
+        {
+          "name": "List tags",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  const tags = pm.response.json();",
+                  "  if (Array.isArray(tags) && tags.length && tags[0].id) {",
+                  "    pm.collectionVariables.set('tagId', tags[0].id);",
+                  "  }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/tags",
+            "description": "Public. On success, **Tests** set `tagId` to the first tag for chaining **Create task**."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "[\n  { \"id\": \"6708e1f1f1f1f1f1f1f1f2a1\", \"name\": \"Work\" },\n  { \"id\": \"6708e1f1f1f1f1f1f1f1f2a2\", \"name\": \"Study\" }\n]"
+            }
+          ]
+        },
+        {
+          "name": "Create tag",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Sprint backlog\"\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/tags",
+            "description": "Public. `name` must be unique (409 if duplicate)."
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"id\": \"6708e1f1f1f1f1f1f1f1f2b0\",\n  \"name\": \"Sprint backlog\"\n}"
+            },
+            {
+              "name": "409 Conflict",
+              "status": "Conflict",
+              "code": 409,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"message\": \"Tag already registered\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Tasks",
+      "item": [
+        {
+          "name": "List my tasks",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  const tasks = pm.response.json();",
+                  "  if (Array.isArray(tasks) && tasks.length && tasks[0].id) {",
+                  "    pm.collectionVariables.set('taskId', tasks[0].id);",
+                  "  }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/api/v1/tasks/user",
+            "description": "**JWT required.** Returns tasks for the authenticated user: `id`, `title`, `content`, `status`, `createdAt`, `tagName`."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "[\n  {\n    \"id\": \"6708e1f1f1f1f1f1f1f1f3c1\",\n    \"title\": \"Ship MVP\",\n    \"content\": \"Finish API + UI\",\n    \"status\": \"IN_PROGRESS\",\n    \"createdAt\": \"2026-04-15T12:00:00+00:00\",\n    \"tagName\": \"Work\"\n  }\n]"
+            },
+            {
+              "name": "401 Unauthorized",
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"msg\": \"Missing Authorization Header\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Create task",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Write Postman collection\",\n  \"content\": \"Cover all /api/v1 routes with examples.\",\n  \"status\": \"PENDING\",\n  \"tagId\": \"{{tagId}}\"\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/tasks",
+            "description": "**JWT required.** `status` must be one of: `PENDING`, `IN_PROGRESS`, `COMPLETED`. Use real `tagId` from **List tags** (variable auto-set)."
+          },
+          "response": [
+            {
+              "name": "201 Created (empty body)",
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "text",
+              "header": [],
+              "body": ""
+            },
+            {
+              "name": "400 Bad Request — invalid tag",
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"message\": \"Invalid tag\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update task",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Write Postman collection\",\n  \"content\": \"Done — all routes documented.\",\n  \"status\": \"COMPLETED\"\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/tasks/{{taskId}}",
+            "description": "**JWT required.** Owner-only. Run **List my tasks** first so `taskId` is set."
+          },
+          "response": [
+            {
+              "name": "200 OK (empty body)",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "text",
+              "header": [],
+              "body": ""
+            },
+            {
+              "name": "404 Not Found",
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"message\": \"Task not found\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Delete task",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/api/v1/tasks/{{taskId}}",
+            "description": "**JWT required.** **204** on success (empty body)."
+          },
+          "response": [
+            {
+              "name": "204 No Content",
+              "status": "No Content",
+              "code": 204,
+              "_postman_previewlanguage": "text",
+              "header": [],
+              "body": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

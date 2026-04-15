@@ -9,6 +9,7 @@ This is an web app with the objective of being able to save your notes and have 
   - [Frontend](#frontend)
   - [Backend](#backend)
   - [REST API](#rest-api)
+  - [Postman collection](#postman-collection)
 - [Image gallery](#image-gallery)
   - [REST API](#rest-api-preview)
   - [Frontend](#frontend-preview)
@@ -171,6 +172,12 @@ Everything related to the API is inside `flaskr/routes`. The following table sum
 | `GET`       | */api/v1/tasks/user*    | Get a list of all tasks on user         |
 | `PUT`       | */api/v1/tasks/id*      | Update a task                           |
 | `DELETE`    | */api/v1/tasks/id*      | Delete a task                           |
+
+### Postman collection
+
+Import [`postman/TodoApp-API.postman_collection.json`](./postman/TodoApp-API.postman_collection.json) into Postman (or compatible clients). The collection includes **saved example responses** (200/201/204/400/401/404/409), collection variables (`baseUrl`, `accessToken`, `userId`, `tagId`, `taskId`), and **Tests** scripts on **Sign in**, **Create user**, **List tags**, and **List my tasks** to chain variables for protected routes.
+
+Interactive OpenAPI docs are still available at `http://localhost:5000/docs` when the backend is running.
 
 ## Image gallery
 
