@@ -1,6 +1,6 @@
 from flask_jwt_extended import create_access_token, get_jwt_identity
-from flask_smorest import abort
 from flaskr.controllers.user_controller import UserController
+from flaskr.errors import ErrorCode, api_abort
 from flaskr.utils import check_password
 from flaskr.mongo import get_db
 
@@ -13,7 +13,12 @@ class AuthController:
         user = db.users.find_one({"email": data["email"]})
 
         if user is None or check_password(user["password"], data["password"]) is False:
-            abort(401, message="Incorrect credentials")
+            api_abort(
+                401,
+                ErrorCode.AUTH_INVALID_CREDENTIALS,
+                "Incorrect credentials",
+                details={"reason": "email_or_password"},
+            )
 
         token = create_access_token(identity=str(user["_id"]))
         return {"token": token}

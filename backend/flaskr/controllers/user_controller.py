@@ -1,5 +1,5 @@
 from flask_jwt_extended import get_jwt_identity
-from flask_smorest import abort
+from flaskr.errors import ErrorCode, api_abort
 from flaskr.utils import generate_password
 from flaskr.mongo import get_db
 from bson import ObjectId
@@ -18,11 +18,11 @@ class UserController:
         try:
             oid = ObjectId(user_id)
         except Exception:
-            abort(404, message="User not found")
+            api_abort(404, ErrorCode.USER_NOT_FOUND, "User not found", details={"resource": "user"})
 
         user = db.users.find_one({"_id": oid}, {"username": 1, "email": 1})
         if not user:
-            abort(404, message="User not found")
+            api_abort(404, ErrorCode.USER_NOT_FOUND, "User not found", details={"resource": "user"})
         return {"id": str(user["_id"]), "username": user["username"], "email": user["email"]}
 
     @staticmethod
@@ -30,9 +30,19 @@ class UserController:
         db = get_db()
 
         if db.users.find_one({"username": data["username"]}):
-            abort(409, message="Username already registered")
+            api_abort(
+                409,
+                ErrorCode.USERNAME_TAKEN,
+                "Username already registered",
+                details={"field": "username"},
+            )
         if db.users.find_one({"email": data["email"]}):
-            abort(409, message="Email already registered")
+            api_abort(
+                409,
+                ErrorCode.EMAIL_TAKEN,
+                "Email already registered",
+                details={"field": "email"},
+            )
 
         doc = {
             "username": data["username"],
@@ -49,9 +59,9 @@ class UserController:
         try:
             oid = ObjectId(user_id)
         except Exception:
-            abort(404, message="User not found")
+            api_abort(404, ErrorCode.USER_NOT_FOUND, "User not found", details={"resource": "user"})
 
         result = db.users.delete_one({"_id": oid})
         if result.deleted_count == 0:
-            abort(404, message="User not found")
+            api_abort(404, ErrorCode.USER_NOT_FOUND, "User not found", details={"resource": "user"})
         return ""

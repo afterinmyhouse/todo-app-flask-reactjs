@@ -77,7 +77,7 @@
               "code": 401,
               "_postman_previewlanguage": "json",
               "header": [{ "key": "Content-Type", "value": "application/json" }],
-              "body": "{\n  \"message\": \"Incorrect credentials\"\n}"
+              "body": "{\n  \"error\": {\n    \"code\": \"AUTH_INVALID_CREDENTIALS\",\n    \"message\": \"Incorrect credentials\",\n    \"httpStatus\": 401,\n    \"details\": {\n      \"reason\": \"email_or_password\"\n    }\n  }\n}"
             }
           ]
         },
@@ -123,7 +123,7 @@
               "code": 409,
               "_postman_previewlanguage": "json",
               "header": [{ "key": "Content-Type", "value": "application/json" }],
-              "body": "{\n  \"message\": \"Email already registered\"\n}"
+              "body": "{\n  \"error\": {\n    \"code\": \"EMAIL_TAKEN\",\n    \"message\": \"Email already registered\",\n    \"httpStatus\": 409,\n    \"details\": {\n      \"field\": \"email\"\n    }\n  }\n}"
             }
           ]
         },
@@ -152,7 +152,7 @@
               "code": 401,
               "_postman_previewlanguage": "json",
               "header": [{ "key": "Content-Type", "value": "application/json" }],
-              "body": "{\n  \"message\": \"Authentication required\"\n}"
+              "body": "{\n  \"error\": {\n    \"code\": \"AUTH_REQUIRED\",\n    \"message\": \"Authentication required\",\n    \"httpStatus\": 401,\n    \"details\": {}\n  }\n}"
             }
           ]
         }
@@ -193,7 +193,7 @@
               "code": 401,
               "_postman_previewlanguage": "json",
               "header": [{ "key": "Content-Type", "value": "application/json" }],
-              "body": "{\n  \"message\": \"Authentication required\"\n}"
+              "body": "{\n  \"error\": {\n    \"code\": \"AUTH_REQUIRED\",\n    \"message\": \"Authentication required\",\n    \"httpStatus\": 401,\n    \"details\": {}\n  }\n}"
             }
           ]
         },
@@ -247,7 +247,7 @@
               "code": 409,
               "_postman_previewlanguage": "json",
               "header": [{ "key": "Content-Type", "value": "application/json" }],
-              "body": "{\n  \"message\": \"Username already registered\"\n}"
+              "body": "{\n  \"error\": {\n    \"code\": \"USERNAME_TAKEN\",\n    \"message\": \"Username already registered\",\n    \"httpStatus\": 409,\n    \"details\": {\n      \"field\": \"username\"\n    }\n  }\n}"
             }
           ]
         },
@@ -276,7 +276,7 @@
               "code": 404,
               "_postman_previewlanguage": "json",
               "header": [{ "key": "Content-Type", "value": "application/json" }],
-              "body": "{\n  \"message\": \"User not found\"\n}"
+              "body": "{\n  \"error\": {\n    \"code\": \"USER_NOT_FOUND\",\n    \"message\": \"User not found\",\n    \"httpStatus\": 404,\n    \"details\": {\n      \"resource\": \"user\"\n    }\n  }\n}"
             }
           ]
         },
@@ -371,7 +371,7 @@
               "code": 409,
               "_postman_previewlanguage": "json",
               "header": [{ "key": "Content-Type", "value": "application/json" }],
-              "body": "{\n  \"message\": \"Tag already registered\"\n}"
+              "body": "{\n  \"error\": {\n    \"code\": \"TAG_EXISTS\",\n    \"message\": \"Tag already registered\",\n    \"httpStatus\": 409,\n    \"details\": {\n      \"field\": \"name\"\n    }\n  }\n}"
             }
           ]
         }
@@ -421,7 +421,7 @@
               "code": 401,
               "_postman_previewlanguage": "json",
               "header": [{ "key": "Content-Type", "value": "application/json" }],
-              "body": "{\n  \"msg\": \"Missing Authorization Header\"\n}"
+              "body": "{\n  \"error\": {\n    \"code\": \"AUTH_REQUIRED\",\n    \"message\": \"Authentication required\",\n    \"httpStatus\": 401,\n    \"details\": {}\n  }\n}"
             }
           ]
         },
@@ -455,7 +455,7 @@
               "code": 400,
               "_postman_previewlanguage": "json",
               "header": [{ "key": "Content-Type", "value": "application/json" }],
-              "body": "{\n  \"message\": \"Invalid tag\"\n}"
+              "body": "{\n  \"error\": {\n    \"code\": \"INVALID_TAG\",\n    \"message\": \"Invalid tag\",\n    \"httpStatus\": 400,\n    \"details\": {\n      \"field\": \"tagId\"\n    }\n  }\n}"
             }
           ]
         },
@@ -489,7 +489,7 @@
               "code": 404,
               "_postman_previewlanguage": "json",
               "header": [{ "key": "Content-Type", "value": "application/json" }],
-              "body": "{\n  \"message\": \"Task not found\"\n}"
+              "body": "{\n  \"error\": {\n    \"code\": \"TASK_NOT_FOUND\",\n    \"message\": \"Task not found\",\n    \"httpStatus\": 404,\n    \"details\": {\n      \"resource\": \"task\"\n    }\n  }\n}"
             }
           ]
         },

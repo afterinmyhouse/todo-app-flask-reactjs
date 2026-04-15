@@ -1,8 +1,9 @@
 from flask_jwt_extended import get_jwt_identity, jwt_required
-from flask_smorest import Blueprint, abort
+from flask_smorest import Blueprint
 from flask.views import MethodView
-from flaskr.schemas.schema import UserSchema
 from flaskr.controllers.user_controller import UserController
+from flaskr.errors import ErrorCode, api_abort
+from flaskr.schemas.schema import UserSchema
 
 bp = Blueprint("users", __name__)
 
@@ -28,7 +29,12 @@ class UserById(MethodView):
     def get(self, user_id):
         """Protected: callers may only read their own user document."""
         if get_jwt_identity() != user_id:
-            abort(403, message="Forbidden")
+            api_abort(
+                403,
+                ErrorCode.ACCESS_DENIED,
+                "Forbidden",
+                details={"resource": "user", "action": "read"},
+            )
         return UserController.get_by_id(user_id)
 
 

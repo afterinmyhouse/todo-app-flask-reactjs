@@ -9,6 +9,7 @@ This is an web app with the objective of being able to save your notes and have 
   - [Frontend](#frontend)
   - [Backend](#backend)
   - [REST API](#rest-api)
+  - [API error handling](#api-error-handling)
   - [Postman collection](#postman-collection)
 - [Image gallery](#image-gallery)
   - [REST API](#rest-api-preview)
@@ -175,6 +176,10 @@ Everything related to the API is inside `flaskr/routes`. The following table sum
 | `GET`       | */api/v1/tasks/user*    | Get a list of all tasks on user         |
 | `PUT`       | */api/v1/tasks/id*      | Update a task                           |
 | `DELETE`    | */api/v1/tasks/id*      | Delete a task                           |
+
+### API error handling
+
+All JSON error responses use a single envelope (`error.code`, `error.message`, `error.httpStatus`, `error.details`). JWT failures use the same shape. See **[`docs/API_ERROR_HANDLING.md`](./docs/API_ERROR_HANDLING.md)** for the full policy, status/code catalog, and client guidance.
 
 ### Postman collection
 

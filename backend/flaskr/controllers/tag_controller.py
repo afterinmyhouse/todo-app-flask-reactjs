@@ -1,4 +1,4 @@
-from flask_smorest import abort
+from flaskr.errors import ErrorCode, api_abort
 from flaskr.mongo import get_db
 
 
@@ -13,7 +13,12 @@ class TagController:
     def create(data):
         db = get_db()
         if db.tags.find_one({"name": data["name"]}):
-            abort(409, message="Tag already registered")
+            api_abort(
+                409,
+                ErrorCode.TAG_EXISTS,
+                "Tag already registered",
+                details={"field": "name"},
+            )
 
         result = db.tags.insert_one({"name": data["name"]})
         return {"id": str(result.inserted_id), "name": data["name"]}

@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { SignInFormSchema, TSignInFormSchema } from "@/schemas/auth-schema";
 import { api } from "@/services/api/client";
 import { useAuthStore } from "@/stores/auth-store";
+import { getApiErrorMessage } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AxiosError } from "axios";
 import { LoaderCircle } from "lucide-react";
@@ -44,7 +45,7 @@ export const SignInForm = () => {
       navigate("/dashboard");
     } catch (err) {
       if (err instanceof AxiosError) {
-        toast.error(err.response?.data.message);
+        toast.error(getApiErrorMessage(err.response?.data));
       }
     }
   };
