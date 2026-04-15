@@ -9,6 +9,12 @@
       "type": "stdio",
       "command": "node",
       "args": ["${workspaceFolder}/scripts/mcp-servers/http-fetch.mjs"]
+    },
+    "atlassian-rovo-mcp": {
+      "url": "https://mcp.atlassian.com/v1/mcp",
+      "headers": {
+        "Authorization": "${env:ATLASSIAN_MCP_AUTHORIZATION}"
+      }
     }
   }
 }
