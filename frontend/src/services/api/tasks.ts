@@ -1,6 +1,6 @@
 import { TCreateFormSchema, TEditFormSchema } from "@/schemas/task-schema";
 import { Task } from "@/types/types";
-import { api } from "./client";
+import { api } from "@/services/api/client";
 
 export const getTasksOnUserAPI = async () => {
   const response = await api.get<Task[]>("/api/v1/tasks/user");

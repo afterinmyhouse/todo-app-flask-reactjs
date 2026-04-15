@@ -1,6 +1,10 @@
 import axios from "axios";
 import { useAuthStore } from "@/stores/auth-store";
 
+/** Single source of truth for the backend origin (use in settings, links, etc.). */
+export const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL ?? "http://localhost:5000";
+
 /**
  * Shared API client.
  *
@@ -8,7 +12,7 @@ import { useAuthStore } from "@/stores/auth-store";
  * - Automatically attaches the JWT when available
  */
 export const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL ?? "http://localhost:5000",
+  baseURL: API_BASE_URL,
 });
 
 api.interceptors.request.use((config) => {

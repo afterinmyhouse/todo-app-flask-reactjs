@@ -2,10 +2,11 @@ import { useGetTagsQuery } from "@/services/queries/tags";
 import { LoadingState } from "./loading-state";
 import { cn } from "@/lib/utils";
 import { Tag } from "lucide-react";
+import type { Dispatch, SetStateAction } from "react";
 
 type Props = {
   selectedTag: string | null;
-  onSelectTag: (tagName: string | null) => void;
+  onSelectTag: Dispatch<SetStateAction<string | null>>;
 };
 
 export function TagsSection({ selectedTag, onSelectTag }: Props) {

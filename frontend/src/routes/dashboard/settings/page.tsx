@@ -8,6 +8,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useSEO } from "@/hooks/useSEO";
+import { API_BASE_URL } from "@/services/api/client";
 import { useAuthStore } from "@/stores/auth-store";
 import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
@@ -18,10 +19,7 @@ export const DashboardSettingsPage = () => {
   const navigate = useNavigate();
   const { token, logout } = useAuthStore();
 
-  const apiBaseUrl = useMemo(
-    () => import.meta.env.VITE_API_BASE_URL ?? "http://localhost:5000",
-    [],
-  );
+  const apiBaseUrl = useMemo(() => API_BASE_URL, []);
 
   const tokenPreview = useMemo(() => {
     if (!token) return "Not signed in";

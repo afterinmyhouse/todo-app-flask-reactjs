@@ -1,20 +1,9 @@
 import { TagsSection } from "./_components/tags/section";
 import { TasksSection } from "./_components/tasks/section";
-import type { Dispatch, SetStateAction } from "react";
 import { useState } from "react";
 
 export const DashboardHomePage = () => {
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
-
-  // Some TS/JSX tooling can lose the inferred prop types across module boundaries.
-  // These casts are a small, localized fix to keep this file type-safe and quiet.
-  const Tags = TagsSection as unknown as React.ComponentType<{
-    selectedTag: string | null;
-    onSelectTag: Dispatch<SetStateAction<string | null>>;
-  }>;
-  const Tasks = TasksSection as unknown as React.ComponentType<{
-    selectedTag: string | null;
-  }>;
 
   return (
     <div className="space-y-6">
@@ -38,11 +27,11 @@ export const DashboardHomePage = () => {
             </button>
           ) : null}
         </div>
-        <Tags selectedTag={selectedTag} onSelectTag={setSelectedTag} />
+        <TagsSection selectedTag={selectedTag} onSelectTag={setSelectedTag} />
       </section>
 
       <section>
-        <Tasks selectedTag={selectedTag} />
+        <TasksSection selectedTag={selectedTag} />
       </section>
     </div>
   );

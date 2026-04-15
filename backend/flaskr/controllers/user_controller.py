@@ -1,8 +1,10 @@
-from flask_jwt_extended import get_jwt_identity
-from flaskr.errors import ErrorCode, api_abort
-from flaskr.utils import generate_password
-from flaskr.mongo import get_db
 from bson import ObjectId
+from bson.errors import InvalidId
+from flask_jwt_extended import get_jwt_identity
+
+from flaskr.errors import ErrorCode, api_abort
+from flaskr.mongo import get_db
+from flaskr.utils import generate_password
 
 
 class UserController:
@@ -17,7 +19,7 @@ class UserController:
         db = get_db()
         try:
             oid = ObjectId(user_id)
-        except Exception:
+        except InvalidId:
             api_abort(404, ErrorCode.USER_NOT_FOUND, "User not found", details={"resource": "user"})
 
         user = db.users.find_one({"_id": oid}, {"username": 1, "email": 1})
@@ -58,7 +60,7 @@ class UserController:
         user_id = get_jwt_identity()
         try:
             oid = ObjectId(user_id)
-        except Exception:
+        except InvalidId:
             api_abort(404, ErrorCode.USER_NOT_FOUND, "User not found", details={"resource": "user"})
 
         result = db.users.delete_one({"_id": oid})

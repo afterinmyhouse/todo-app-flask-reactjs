@@ -1,8 +1,11 @@
+from datetime import datetime, timezone
+
+from bson import ObjectId
+from bson.errors import InvalidId
 from flask_jwt_extended import get_jwt_identity
+
 from flaskr.errors import ErrorCode, api_abort
 from flaskr.mongo import get_db
-from bson import ObjectId
-from datetime import datetime, timezone
 
 
 class TaskController:
@@ -12,7 +15,7 @@ class TaskController:
         user_id = get_jwt_identity()
         try:
             user_oid = ObjectId(user_id)
-        except Exception:
+        except InvalidId:
             api_abort(
                 401,
                 ErrorCode.INVALID_TOKEN_SUBJECT,
@@ -39,7 +42,7 @@ class TaskController:
         user_id = get_jwt_identity()
         try:
             user_oid = ObjectId(user_id)
-        except Exception:
+        except InvalidId:
             api_abort(
                 401,
                 ErrorCode.INVALID_TOKEN_SUBJECT,
@@ -49,7 +52,7 @@ class TaskController:
 
         try:
             tag_oid = ObjectId(data["tag_id"])
-        except Exception:
+        except InvalidId:
             api_abort(400, ErrorCode.INVALID_TAG, "Invalid tag", details={"field": "tagId"})
 
         tag = db.tags.find_one({"_id": tag_oid})
@@ -75,7 +78,7 @@ class TaskController:
         try:
             user_oid = ObjectId(user_id)
             task_oid = ObjectId(task_id)
-        except Exception:
+        except InvalidId:
             api_abort(404, ErrorCode.TASK_NOT_FOUND, "Task not found", details={"resource": "task"})
 
         result = db.tasks.update_one(
@@ -93,7 +96,7 @@ class TaskController:
         try:
             user_oid = ObjectId(user_id)
             task_oid = ObjectId(task_id)
-        except Exception:
+        except InvalidId:
             api_abort(404, ErrorCode.TASK_NOT_FOUND, "Task not found", details={"resource": "task"})
 
         result = db.tasks.delete_one({"_id": task_oid, "user_id": user_oid})

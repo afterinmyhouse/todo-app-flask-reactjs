@@ -14,7 +14,9 @@ export const Navbar = () => {
     navigate("/");
   };
 
-  const isDashboard = location.pathname === "/dashboard";
+  const isDashboard =
+    location.pathname === "/dashboard" ||
+    location.pathname.startsWith("/dashboard/");
 
   return (
     <header className="fixed top-0 left-0 w-full bg-background z-50 border-b">

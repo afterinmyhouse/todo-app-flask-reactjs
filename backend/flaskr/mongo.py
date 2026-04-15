@@ -1,20 +1,21 @@
-import os
+from __future__ import annotations
+
 from pymongo import MongoClient
+from pymongo.database import Database
+
+from config import Config
+
+_client: MongoClient | None = None
 
 
 def get_mongo_client() -> MongoClient:
-    """
-    Lazily create a MongoClient using env vars.
-    """
-    uri = os.getenv("MONGO_URI", "mongodb://localhost:27017")
-    return MongoClient(uri)
+    """Return a process-wide MongoClient (singleton)."""
+    global _client
+    if _client is None:
+        _client = MongoClient(Config.MONGO_URI)
+    return _client
 
 
-def get_db_name() -> str:
-    return os.getenv("MONGO_DB_NAME", "todoapp")
-
-
-def get_db():
-    client = get_mongo_client()
-    return client[get_db_name()]
-
+def get_db() -> Database:
+    """Default database for todo API collections."""
+    return get_mongo_client()[Config.MONGO_DB_NAME]
