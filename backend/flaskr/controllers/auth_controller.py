@@ -7,7 +7,8 @@ from flaskr.mongo import get_db
 
 class AuthController:
     @staticmethod
-    def sign_in(data):
+    def login(data):
+        """Validate email/password and return a JWT access token (subject = user ObjectId string)."""
         db = get_db()
         user = db.users.find_one({"email": data["email"]})
 
@@ -15,8 +16,12 @@ class AuthController:
             abort(401, message="Incorrect credentials")
 
         token = create_access_token(identity=str(user["_id"]))
-
         return {"token": token}
+
+    @staticmethod
+    def sign_in(data):
+        """Legacy alias for :meth:`login` (same behavior)."""
+        return AuthController.login(data)
 
     @staticmethod
     def register(data):

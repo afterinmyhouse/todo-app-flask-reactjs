@@ -20,7 +20,7 @@ import { toast } from "sonner";
 
 export const SignInForm = () => {
   const navigate = useNavigate();
-  const { signIn } = useAuthStore();
+  const { login } = useAuthStore();
   const form = useForm<TSignInFormSchema>({
     resolver: zodResolver(SignInFormSchema),
     defaultValues: { email: "", password: "" },
@@ -34,11 +34,12 @@ export const SignInForm = () => {
 
   const onSubmit = async (formData: TSignInFormSchema) => {
     try {
-      const response = await api.post("/api/v1/auth/sign-in", formData);
+      const response = await api.post<{ token: string }>(
+        "/api/v1/auth/login",
+        formData,
+      );
 
-      const token: string = response.data.token;
-
-      signIn(token);
+      login(response.data.token);
 
       navigate("/dashboard");
     } catch (err) {

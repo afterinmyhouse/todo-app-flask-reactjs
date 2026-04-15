@@ -1,15 +1,29 @@
 from flask_smorest import Blueprint
 from flask.views import MethodView
 from flaskr.controllers.auth_controller import AuthController
-from flaskr.schemas.schema import RegisterResponseSchema, RegisterSchema, SignInSchema
+from flaskr.schemas.schema import (
+    LoginResponseSchema,
+    LoginSchema,
+    RegisterResponseSchema,
+    RegisterSchema,
+    SignInSchema,
+)
 
 bp = Blueprint("auth", __name__)
+
+
+@bp.route("/auth/login")
+class Login(MethodView):
+    @bp.arguments(LoginSchema)
+    @bp.response(200, LoginResponseSchema)
+    def post(self, data):
+        return AuthController.login(data)
 
 
 @bp.route("/auth/sign-in")
 class SignIn(MethodView):
     @bp.arguments(SignInSchema)
-    @bp.response(200)
+    @bp.response(200, LoginResponseSchema)
     def post(self, data):
         return AuthController.sign_in(data)
 

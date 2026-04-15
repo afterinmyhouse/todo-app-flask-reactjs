@@ -16,6 +16,16 @@ class SignInSchema(PlainSignInSchema):
     pass
 
 
+class LoginSchema(PlainSignInSchema):
+    """Credentials for POST /auth/login (same shape as legacy sign-in)."""
+
+
+class LoginResponseSchema(Schema):
+    """JWT access token for Authorization: Bearer <token>. Expiry set server-side (see JWT_ACCESS_TOKEN_EXPIRES)."""
+
+    token = fields.Str(required=True, metadata={"description": "JWT access token"})
+
+
 class RegisterSchema(PlainRegisterSchema):
     pass
 

@@ -15,7 +15,7 @@ vi.mock("react-router-dom", async () => {
 });
 
 vi.mock("@/stores/auth-store", () => ({
-  useAuthStore: () => ({ signIn: vi.fn() }),
+  useAuthStore: () => ({ login: vi.fn() }),
 }));
 
 vi.mock("@/services/api/client", () => ({
@@ -42,7 +42,7 @@ describe("SignInForm", () => {
     await user.click(screen.getByRole("button", { name: /sign in/i }));
 
     // TODO: assert axios.post called with expected URL + payload
-    // TODO: assert signIn(token) called and navigation to /dashboard happens on success
+    // TODO: assert login(token) called and navigation to /dashboard happens on success
     expect(true).toBe(true);
   });
 });

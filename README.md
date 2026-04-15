@@ -161,7 +161,8 @@ Everything related to the API is inside `flaskr/routes`. The following table sum
 
 | HTTP Method | Resource URL            | Notes                                   |
 | ----------- | ----------------------- | --------------------------------------- |
-| `POST`      | */api/v1/auth/sign-in*  | Auth user and create JWT                |
+| `POST`      | */api/v1/auth/login*    | Login; returns JWT (`LoginResponseSchema`) |
+| `POST`      | */api/v1/auth/sign-in*  | Same as login (legacy path)            |
 | `POST`      | */api/v1/auth/register* | Register user; returns user + JWT (201) |
 | `GET`       | */api/v1/users*         | Get a list of all users                 |
 | `POST`      | */api/v1/users*         | Create a new user                       |
@@ -176,7 +177,7 @@ Everything related to the API is inside `flaskr/routes`. The following table sum
 
 ### Postman collection
 
-Import [`postman/TodoApp-API.postman_collection.json`](./postman/TodoApp-API.postman_collection.json) into Postman (or compatible clients). The collection includes **saved example responses** (200/201/204/400/401/404/409), collection variables (`baseUrl`, `accessToken`, `userId`, `tagId`, `taskId`), and **Tests** scripts on **Register**, **Sign in**, **Create user**, **List tags**, and **List my tasks** to chain variables for protected routes.
+Import [`postman/TodoApp-API.postman_collection.json`](./postman/TodoApp-API.postman_collection.json) into Postman (or compatible clients). The collection includes **saved example responses** (200/201/204/400/401/404/409), collection variables (`baseUrl`, `accessToken`, `userId`, `tagId`, `taskId`), and **Tests** scripts on **Register**, **Login**, **Create user**, **List tags**, and **List my tasks** to chain variables for protected routes.
 
 Interactive OpenAPI docs are still available at `http://localhost:5000/docs` when the backend is running.
 

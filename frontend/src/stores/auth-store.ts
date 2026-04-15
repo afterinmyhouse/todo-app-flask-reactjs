@@ -7,7 +7,8 @@ type State = {
 };
 
 type Action = {
-  signIn: (token: string) => void;
+  /** Persist JWT and mark the session active (used after login or register). */
+  login: (token: string) => void;
   logout: () => void;
 };
 
@@ -16,7 +17,7 @@ export const useAuthStore = create<State & Action>()(
     (set) => ({
       token: null,
       isLoggedIn: false,
-      signIn: (token: string) => {
+      login: (token: string) => {
         set({ token, isLoggedIn: true });
       },
       logout: () => {

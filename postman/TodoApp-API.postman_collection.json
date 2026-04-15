@@ -2,7 +2,7 @@
   "info": {
     "_postman_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
     "name": "TodoApp API",
-    "description": "# TodoApp Flask API (`/api/v1`)\n\n**Import:** Postman → **Import** → this file.\n\n**Prerequisites:** Backend running (default `http://localhost:5000`). MongoDB populated; run `python seed.py` from `backend/` for tags.\n\n**Flow:**\n1. **Auth → Register** (or **Users → Create user** then **Sign in**) — Register saves `accessToken`, `userId`.\n2. **Tags → List tags** — test script saves first tag to `tagId`.\n3. **Tasks → Create task** then **Tasks → List my tasks** — script saves first task to `taskId`.\n\n**OpenAPI:** `GET {{baseUrl}}/docs`\n\nJWT: `Authorization: Bearer {{accessToken}}` on protected routes.",
+    "description": "# TodoApp Flask API (`/api/v1`)\n\n**Import:** Postman → **Import** → this file.\n\n**Prerequisites:** Backend running (default `http://localhost:5000`). MongoDB populated; run `python seed.py` from `backend/` for tags.\n\n**Flow:**\n1. **Auth → Register** (or **Users → Create user** then **Login**) — Register saves `accessToken`, `userId`.\n2. **Tags → List tags** — test script saves first tag to `tagId`.\n3. **Tasks → Create task** then **Tasks → List my tasks** — script saves first task to `taskId`.\n\n**OpenAPI:** `GET {{baseUrl}}/docs`\n\nJWT: `Authorization: Bearer {{accessToken}}` on protected routes.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -17,7 +17,7 @@
       "name": "Auth",
       "item": [
         {
-          "name": "Sign in",
+          "name": "Login",
           "event": [
             {
               "listen": "test",
@@ -41,8 +41,8 @@
               "mode": "raw",
               "raw": "{\n  \"email\": \"demo@example.com\",\n  \"password\": \"your-password\"\n}"
             },
-            "url": "{{baseUrl}}/api/v1/auth/sign-in",
-            "description": "Returns JWT. On success, collection variable `accessToken` is set from the **Tests** script."
+            "url": "{{baseUrl}}/api/v1/auth/login",
+            "description": "Returns JWT (`token`). Use `Authorization: Bearer {{accessToken}}`. On success, **Tests** set `accessToken`. Legacy path: `POST /api/v1/auth/sign-in`."
           },
           "response": [
             {
@@ -54,7 +54,7 @@
                   "mode": "raw",
                   "raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"secret\"\n}"
                 },
-                "url": "{{baseUrl}}/api/v1/auth/sign-in"
+                "url": "{{baseUrl}}/api/v1/auth/login"
               },
               "status": "OK",
               "code": 200,
@@ -71,7 +71,7 @@
                   "mode": "raw",
                   "raw": "{\n  \"email\": \"wrong@example.com\",\n  \"password\": \"bad\"\n}"
                 },
-                "url": "{{baseUrl}}/api/v1/auth/sign-in"
+                "url": "{{baseUrl}}/api/v1/auth/login"
               },
               "status": "Unauthorized",
               "code": 401,

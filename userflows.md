@@ -26,15 +26,15 @@ This document describes the **user-facing flows** implemented in the current app
 - **Frontend**
   - Form UI: `frontend/src/routes/landing/home/_components/sign-in/form.tsx`
   - Validation: `frontend/src/schemas/auth-schema.ts` (`SignInFormSchema`)
-  - Request: `POST /api/v1/auth/sign-in`
+  - Request: `POST /api/v1/auth/login` (legacy `POST /api/v1/auth/sign-in` still works)
   - On success:
-    - Persist token in Zustand store: `frontend/src/stores/auth-store.ts` (`signIn(token)`)
+    - Persist token in Zustand store: `frontend/src/stores/auth-store.ts` (`login(token)`)
     - Navigate to `/dashboard`
   - Route guards:
     - If logged in: landing root redirects to `/dashboard` (`frontend/src/routes/landing/root.tsx`)
     - If not logged in: dashboard root redirects to `/` (`frontend/src/routes/dashboard/root.tsx`)
 - **Backend**
-  - Route: `backend/flaskr/routes/auth_route.py` → `POST /auth/sign-in`
+  - Route: `backend/flaskr/routes/auth_route.py` → `POST /auth/login` (and legacy `POST /auth/sign-in`)
   - Controller: `backend/flaskr/controllers/auth_controller.py` → `AuthController.sign_in`
   - Behavior:
     - Looks up user by email

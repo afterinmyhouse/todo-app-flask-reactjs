@@ -23,7 +23,7 @@ import { toast } from "sonner";
 
 export const CreateAccountForm = () => {
   const navigate = useNavigate();
-  const { signIn } = useAuthStore();
+  const { login } = useAuthStore();
   const form = useForm<TCreateAccountFormSchema>({
     resolver: zodResolver(CreateAccountFormSchema),
     defaultValues: { username: "", email: "", password: "" },
@@ -45,7 +45,7 @@ export const CreateAccountForm = () => {
         token: string;
       }>("/api/v1/auth/register", formData);
 
-      signIn(response.data.token);
+      login(response.data.token);
       toast.success("Account created — you are signed in.");
       reset();
       navigate("/dashboard");
