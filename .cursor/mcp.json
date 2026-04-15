@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "weather-nws": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["${workspaceFolder}/scripts/mcp-servers/nws-weather.mjs"]
+    },
+    "http-fetch": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["${workspaceFolder}/scripts/mcp-servers/http-fetch.mjs"]
+    }
+  }
+}
