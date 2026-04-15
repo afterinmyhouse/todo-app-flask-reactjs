@@ -126,6 +126,35 @@
               "body": "{\n  \"message\": \"Email already registered\"\n}"
             }
           ]
+        },
+        {
+          "name": "Get current user (me)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/api/v1/auth/me",
+            "description": "**JWT required.** Returns the authenticated user (`id`, `username`, `email`)."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"id\": \"6708e1f1f1f1f1f1f1f1f1f1\",\n  \"username\": \"alice\",\n  \"email\": \"alice@example.com\"\n}"
+            },
+            {
+              "name": "401 Unauthorized",
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"message\": \"Authentication required\"\n}"
+            }
+          ]
         }
       ]
     },
@@ -136,16 +165,20 @@
           "name": "List users",
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
             "url": "{{baseUrl}}/api/v1/users",
-            "description": "Public. Returns `id`, `username`, `email` per user (no passwords)."
+            "description": "**JWT required.** Returns `id`, `username`, `email` per user (no passwords)."
           },
           "response": [
             {
               "name": "200 OK",
               "originalRequest": {
                 "method": "GET",
-                "header": [],
+                "header": [
+                  { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+                ],
                 "url": "{{baseUrl}}/api/v1/users"
               },
               "status": "OK",
@@ -153,6 +186,14 @@
               "_postman_previewlanguage": "json",
               "header": [{ "key": "Content-Type", "value": "application/json" }],
               "body": "[\n  {\n    \"id\": \"6708e1f1f1f1f1f1f1f1f1f1\",\n    \"username\": \"alice\",\n    \"email\": \"alice@example.com\"\n  },\n  {\n    \"id\": \"6708e1f1f1f1f1f1f1f1f1f2\",\n    \"username\": \"bob\",\n    \"email\": \"bob@example.com\"\n  }\n]"
+            },
+            {
+              "name": "401 Unauthorized",
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"message\": \"Authentication required\"\n}"
             }
           ]
         },
@@ -214,9 +255,11 @@
           "name": "Get user by id",
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
             "url": "{{baseUrl}}/api/v1/users/{{userId}}",
-            "description": "Replace `userId` with a 24-char hex MongoDB ObjectId string, or run **Create user** first."
+            "description": "**JWT required.** `userId` must match the token subject (your own id). Use variable from **Register** / **Create user** / **Login** flow."
           },
           "response": [
             {

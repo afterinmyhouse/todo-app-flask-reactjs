@@ -1,4 +1,4 @@
-from flask_jwt_extended import create_access_token
+from flask_jwt_extended import create_access_token, get_jwt_identity
 from flask_smorest import abort
 from flaskr.controllers.user_controller import UserController
 from flaskr.utils import check_password
@@ -29,3 +29,8 @@ class AuthController:
         created = UserController.create(data)
         token = create_access_token(identity=created["id"])
         return {**created, "token": token}
+
+    @staticmethod
+    def me():
+        """Current user profile derived from JWT subject (MongoDB ObjectId string)."""
+        return UserController.get_by_id(get_jwt_identity())

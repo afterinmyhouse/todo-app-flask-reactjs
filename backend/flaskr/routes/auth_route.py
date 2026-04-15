@@ -1,3 +1,4 @@
+from flask_jwt_extended import jwt_required
 from flask_smorest import Blueprint
 from flask.views import MethodView
 from flaskr.controllers.auth_controller import AuthController
@@ -7,6 +8,7 @@ from flaskr.schemas.schema import (
     RegisterResponseSchema,
     RegisterSchema,
     SignInSchema,
+    UserSchema,
 )
 
 bp = Blueprint("auth", __name__)
@@ -34,3 +36,12 @@ class Register(MethodView):
     @bp.response(201, RegisterResponseSchema)
     def post(self, data):
         return AuthController.register(data)
+
+
+@bp.route("/auth/me")
+class AuthMe(MethodView):
+    @jwt_required()
+    @bp.response(200, UserSchema)
+    def get(self):
+        """Protected: requires valid JWT. Returns the authenticated user's profile."""
+        return AuthController.me()

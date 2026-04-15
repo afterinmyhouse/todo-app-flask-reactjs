@@ -1,15 +1,30 @@
-import { Navigate, Outlet } from "react-router-dom";
-import { Navbar } from "./_components/navbar";
-import { useSEO } from "@/hooks/useSEO";
-import { Toaster } from "sonner";
+import { fetchCurrentUser } from "@/services/api/auth";
 import { useAuthStore } from "@/stores/auth-store";
+import { useSEO } from "@/hooks/useSEO";
+import { AxiosError } from "axios";
+import { useEffect } from "react";
+import { Navigate, Outlet, useNavigate } from "react-router-dom";
+import { Navbar } from "./_components/navbar";
+import { Toaster } from "sonner";
 
 export const DashboardRoot = () => {
-  const { isLoggedIn } = useAuthStore();
+  const navigate = useNavigate();
+  const { isLoggedIn, token, logout } = useAuthStore();
 
   if (!isLoggedIn) {
     return <Navigate to="/" />;
   }
+
+  useEffect(() => {
+    if (!token) return;
+    fetchCurrentUser().catch((err) => {
+      const status = err instanceof AxiosError ? err.response?.status : undefined;
+      if (status === 401) {
+        logout();
+        navigate("/", { replace: true });
+      }
+    });
+  }, [token, logout, navigate]);
 
   useSEO("Dashboard | TodoApp");
 

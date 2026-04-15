@@ -164,9 +164,10 @@ Everything related to the API is inside `flaskr/routes`. The following table sum
 | `POST`      | */api/v1/auth/login*    | Login; returns JWT (`LoginResponseSchema`) |
 | `POST`      | */api/v1/auth/sign-in*  | Same as login (legacy path)            |
 | `POST`      | */api/v1/auth/register* | Register user; returns user + JWT (201) |
-| `GET`       | */api/v1/users*         | Get a list of all users                 |
+| `GET`       | */api/v1/auth/me*      | Current user profile (**JWT required**) |
+| `GET`       | */api/v1/users*         | List all users (**JWT required**)       |
 | `POST`      | */api/v1/users*         | Create a new user                       |
-| `GET`       | */api/v1/users/id*      | Get a single user by id                 |
+| `GET`       | */api/v1/users/id*      | Get user by id (**JWT**, own id only)   |
 | `DELETE`    | */api/v1/users/account* | Delete a user account                   |
 | `GET`       | */api/v1/tags*          | Get a list of tags                      |
 | `POST`      | */api/v1/tags*          | Create a new tag                        |
