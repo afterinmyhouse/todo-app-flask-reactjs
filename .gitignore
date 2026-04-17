@@ -1,0 +1,12 @@
+# Repo-root .gitignore.
+#
+# Only targets secrets and local overrides created by the Docker workflow
+# introduced in docker-compose.yml. Language-specific ignores live in
+# backend/.gitignore and frontend/.gitignore.
+
+# Local env injected into docker compose (see .env.example).
+.env
+.env.local
+
+# Docker bind-mount / build artifacts that may land at the repo root.
+*.pid

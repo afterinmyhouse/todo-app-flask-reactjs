@@ -1,0 +1,26 @@
+# Node / build artifacts
+node_modules/
+dist/
+.vite/
+coverage/
+*.log
+.cache/
+
+# Local env (baked in via --build-arg instead)
+.env
+.env.*
+!.env.example
+
+# Tests aren't needed for a production image
+**/*.test.ts
+**/*.test.tsx
+
+# Editor / OS noise
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Git metadata
+.git/
+.gitignore

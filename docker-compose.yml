@@ -1,0 +1,80 @@
+# docker-compose.yml — out-of-the-box dev/prod-ish environment.
+#
+# Brings up three services:
+#   * ``mongo``   — MongoDB 7 with a named volume so data survives rebuilds.
+#   * ``backend`` — Flask API on http://localhost:5000 (gunicorn).
+#   * ``frontend``— Vite SPA on http://localhost:8080 (nginx).
+#
+# Usage
+# -----
+#   cp .env.example .env            # once, then edit JWT_SECRET_KEY
+#   docker compose up --build       # first run
+#   docker compose up -d             # subsequent runs
+#   docker compose down              # stop (keeps the mongo volume)
+#   docker compose down -v           # stop AND drop the mongo volume
+#
+# The frontend's API base URL is baked in at build time. If you need to
+# point the UI at a different backend (e.g. a remote one), override it:
+#   docker compose build --build-arg VITE_API_BASE_URL=https://api.example.com frontend
+
+services:
+  mongo:
+    image: mongo:7
+    container_name: todoapp-mongo
+    restart: unless-stopped
+    volumes:
+      - mongo-data:/data/db
+    healthcheck:
+      # ``mongosh`` ships in the mongo:7 image. A successful ping means the
+      # server is up and accepting connections — used by the backend's
+      # ``depends_on.condition: service_healthy`` gate.
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: todoapp-backend
+    restart: unless-stopped
+    depends_on:
+      mongo:
+        condition: service_healthy
+    environment:
+      # ``JWT_SECRET_KEY`` is required in production. Compose reads it from
+      # the sibling ``.env`` file (see .env.example).
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:?JWT_SECRET_KEY must be set (see .env.example)}
+      MONGO_URI: mongodb://mongo:27017
+      MONGO_DB_NAME: ${MONGO_DB_NAME:-todoapp}
+      PORT: "5000"
+    ports:
+      - "5000:5000"
+    healthcheck:
+      # The Swagger UI is always served; hitting it confirms the Flask app
+      # is up without needing a dedicated /health route.
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:5000/docs').read()"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        # Host-reachable URL: the browser runs on the host, so it talks to
+        # the backend via the published port, not the compose network.
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:5000}
+    container_name: todoapp-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "8080:80"
+
+volumes:
+  mongo-data:

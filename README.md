@@ -8,6 +8,7 @@ This is an web app with the objective of being able to save your notes and have 
 - [Project requirements and how to use it](#project-requirements-and-how-to-use-it)
   - [Frontend](#frontend)
   - [Backend](#backend)
+  - [Run with Docker](#run-with-docker)
   - [REST API](#rest-api)
   - [API error handling](#api-error-handling)
   - [Postman collection](#postman-collection)
@@ -175,6 +176,98 @@ After you have done the previous step add some default data for the task labels.
 ```shell
 python seed.py
 ```
+
+### Run with Docker
+
+The project ships a production-ready container setup: a **multi-stage Python image** for the backend (Flask + Gunicorn), a **multi-stage Node → nginx image** for the frontend (Vite build served by nginx with SPA fallback), and a **Compose file** at the repo root that wires them together with MongoDB. Everything is non-root, slim-image based, and uses `.dockerignore` files so local virtualenvs, test caches, and `node_modules` never leak into images.
+
+Files:
+
+- [`backend/Dockerfile`](./backend/Dockerfile) — Python 3.13 slim, venv in `/opt/venv`, runs `gunicorn application:app` on port 5000.
+- [`frontend/Dockerfile`](./frontend/Dockerfile) — Node 20 Alpine build stage, nginx 1.27 Alpine runtime on port 80.
+- [`frontend/nginx.conf`](./frontend/nginx.conf) — SPA fallback + gzip + long-cache hashed assets.
+- [`docker-compose.yml`](./docker-compose.yml) — `mongo`, `backend` (5000), `frontend` (8080), with a named volume for Mongo data and a health gate on the DB.
+- [`.env.example`](./.env.example) — required/optional env vars.
+
+#### Quick start
+
+Prerequisites: Docker Desktop (or Docker Engine 24+) with the Compose plugin.
+
+1. Copy the env file and set a JWT secret:
+
+```shell
+# Linux / macOS
+cp .env.example .env
+
+# Windows (PowerShell)
+Copy-Item .env.example .env
+```
+
+Generate a strong secret and paste it into `.env` as `JWT_SECRET_KEY`:
+
+```shell
+python -c "import secrets; print(secrets.token_hex(32))"
+```
+
+2. Build and start all three services:
+
+```shell
+docker compose up --build
+```
+
+3. Open the app:
+
+   - Frontend:  http://localhost:8080
+   - Backend:   http://localhost:5000
+   - API docs:  http://localhost:5000/docs
+
+4. (Optional) Seed the tag list inside the running backend container:
+
+```shell
+docker compose exec backend python seed.py
+```
+
+5. Stop:
+
+```shell
+docker compose down        # keeps mongo data volume
+docker compose down -v     # also removes mongo data volume
+```
+
+#### Building the images individually
+
+You can build and run either image standalone without Compose:
+
+```shell
+# Backend — requires a reachable MongoDB URL
+docker build -t todoapp-backend ./backend
+docker run --rm -p 5000:5000 \
+  -e JWT_SECRET_KEY=dev-secret-change-me \
+  -e MONGO_URI=mongodb://host.docker.internal:27017 \
+  todoapp-backend
+
+# Frontend — VITE_API_BASE_URL is baked in at build time
+docker build \
+  --build-arg VITE_API_BASE_URL=http://localhost:5000 \
+  -t todoapp-frontend ./frontend
+docker run --rm -p 8080:80 todoapp-frontend
+```
+
+To point a deployed frontend at a remote backend, rebuild it with the
+correct URL:
+
+```shell
+docker compose build \
+  --build-arg VITE_API_BASE_URL=https://api.example.com \
+  frontend
+```
+
+#### Security / size notes
+
+- Both images run non-root where feasible (backend as a dedicated `app` user; nginx:alpine worker processes run as `nginx`).
+- Python builds use a venv in an early stage and copy only that venv into the runtime stage, so compilers and pip caches are discarded.
+- `.env` files are excluded via `.dockerignore`; configuration is injected at runtime.
+- The backend Dockerfile installs Gunicorn out of band (not in `requirements.txt`) so the local `flask run` dev workflow is unchanged.
 
 ### REST API
 

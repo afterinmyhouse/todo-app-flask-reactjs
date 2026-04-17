@@ -1,0 +1,36 @@
+# Python artifacts
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+htmlcov/
+
+# Virtual envs (never ship the host venv into the image)
+venv/
+.venv/
+env/
+
+# Secrets — .env stays on the host; runtime vars are injected by compose
+.env
+.env.*
+!.env.example
+
+# Local SQLite artifact created by the legacy dev workflow
+data.db
+
+# Tests aren't needed in a runtime image; keep the final layer small
+tests/
+
+# Editor / OS noise
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Git metadata (never useful inside the image)
+.git/
+.gitignore
