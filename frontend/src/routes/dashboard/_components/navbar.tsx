@@ -14,9 +14,10 @@ export const Navbar = () => {
     navigate("/");
   };
 
-  const isDashboard =
+  const isDashboardHome =
     location.pathname === "/dashboard" ||
-    location.pathname.startsWith("/dashboard/");
+    location.pathname === "/dashboard/";
+  const isProjects = location.pathname.startsWith("/dashboard/projects");
 
   return (
     <header className="fixed top-0 left-0 w-full bg-background z-50 border-b">
@@ -30,10 +31,19 @@ export const Navbar = () => {
               to="/dashboard"
               className={cn(
                 "px-2 py-1 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors",
-                isDashboard && "bg-accent text-accent-foreground",
+                isDashboardHome && "bg-accent text-accent-foreground",
               )}
             >
               Dashboard
+            </Link>
+            <Link
+              to="/dashboard/projects"
+              className={cn(
+                "px-2 py-1 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors",
+                isProjects && "bg-accent text-accent-foreground",
+              )}
+            >
+              Projects
             </Link>
           </div>
         </div>

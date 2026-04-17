@@ -92,6 +92,26 @@ VITE v5.4.11  ready in 349 ms
 
 3. That's all for the Frontend, if you haven't run the Backend yet, continue with the next section (Backend)
 
+#### Dashboard screens
+
+The authenticated dashboard is composed of these screens (see
+[`docs/FRONTEND_SCREENS.md`](./docs/FRONTEND_SCREENS.md) for the full
+reference and the repeatable scaffolding workflow):
+
+- `/dashboard` — tags filter and tasks grid.
+- `/dashboard/settings` — session + API base URL management.
+- `/dashboard/projects` — projects hub (CTAs + cached list).
+- `/dashboard/projects/new` — single-entity project create form.
+- `/dashboard/projects/new-with-tasks` — project + 1..50 tasks in one
+  atomic request (field-array form backed by
+  `POST /api/v1/add-project-with-tasks`).
+
+Run the frontend tests with:
+
+```shell
+$ npm run test
+```
+
 ### Backend
 
 If you already have Python installed on your computer perform the following steps to run the Backend
