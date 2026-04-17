@@ -9,6 +9,7 @@ This is an web app with the objective of being able to save your notes and have 
   - [Frontend](#frontend)
   - [Backend](#backend)
   - [Run with Docker](#run-with-docker)
+  - [Run on local Kubernetes](#run-on-local-kubernetes)
   - [REST API](#rest-api)
   - [API error handling](#api-error-handling)
   - [Postman collection](#postman-collection)
@@ -268,6 +269,34 @@ docker compose build \
 - Python builds use a venv in an early stage and copy only that venv into the runtime stage, so compilers and pip caches are discarded.
 - `.env` files are excluded via `.dockerignore`; configuration is injected at runtime.
 - The backend Dockerfile installs Gunicorn out of band (not in `requirements.txt`) so the local `flask run` dev workflow is unchanged.
+
+### Run on local Kubernetes
+
+A one-command local Kubernetes deployment is provided via [kind](https://kind.sigs.k8s.io/). Full reference: [`docs/KUBERNETES.md`](./docs/KUBERNETES.md).
+
+Prerequisites: Docker Desktop, `kubectl` (v1.34+), `kind` (v0.31+), PowerShell 7.
+
+Bring up the stack:
+
+```powershell
+pwsh ./scripts/k8s-up.ps1
+```
+
+The script creates a kind cluster named `todoapp` using [`k8s/kind-cluster.yaml`](./k8s/kind-cluster.yaml), builds & loads the `todoapp-backend:local` / `todoapp-frontend:local` images, applies every manifest via Kustomize ([`k8s/kustomization.yaml`](./k8s/kustomization.yaml)), generates a random `JWT_SECRET_KEY`, and waits for all Deployments to become `Available`.
+
+Once it finishes, the app is reachable on the host via NodePorts (kind publishes them through its cluster config):
+
+- Frontend:   http://localhost:8080
+- Backend:    http://localhost:5000
+- Swagger UI: http://localhost:5000/docs
+
+Tear down with:
+
+```powershell
+pwsh ./scripts/k8s-down.ps1
+```
+
+Manifest highlights: non-root backend (UID 1001, dropped capabilities), resource requests/limits on every container, HTTP/TCP readiness + liveness probes, `RollingUpdate` for stateless services + `Recreate` for Mongo (RWO PVC), ConfigMap for non-secret env and Secret for the JWT key, and standard `app.kubernetes.io/*` labels throughout. See [`docs/KUBERNETES.md`](./docs/KUBERNETES.md) for the full walkthrough, troubleshooting tips, and the migration path to a real cluster.
 
 ### REST API
 

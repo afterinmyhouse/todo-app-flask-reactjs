@@ -1,0 +1,21 @@
+# kind cluster config for local TodoApp deployment.
+#
+# The NodePort services defined in ``k8s/*.yaml`` bind to 30080 (frontend)
+# and 30050 (backend). Kind runs Kubernetes inside a Docker container, so
+# we map those node ports out to matching host ports here — after
+# ``kind create cluster --config k8s/kind-cluster.yaml`` the browser can
+# hit http://localhost:8080 and the backend at http://localhost:5000
+# with zero extra plumbing (no port-forward, no Ingress controller).
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+name: todoapp
+
+nodes:
+  - role: control-plane
+    extraPortMappings:
+      - containerPort: 30080
+        hostPort: 8080
+        protocol: TCP
+      - containerPort: 30050
+        hostPort: 5000
+        protocol: TCP

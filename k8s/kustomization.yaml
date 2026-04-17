@@ -1,0 +1,24 @@
+# Kustomize entrypoint so the whole stack applies in one command:
+#   kubectl apply -k k8s
+#
+# The kind-cluster.yaml file is intentionally NOT listed here — it's
+# consumed by ``kind create cluster --config`` before kubectl ever
+# talks to the API server.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - namespace.yaml
+  - mongo.yaml
+  - backend.yaml
+  - frontend.yaml
+
+# Use the newer ``labels`` form (kustomize v4.1+) so we can add
+# ``managed-by`` to metadata only, without polluting pod selectors
+# (selectors are immutable, so keeping them minimal avoids future
+# rollout pain). ``app.kubernetes.io/part-of`` is already baked into
+# every manifest's labels and selectors, so we don't add it here.
+labels:
+  - pairs:
+      app.kubernetes.io/managed-by: kustomize
+    includeSelectors: false

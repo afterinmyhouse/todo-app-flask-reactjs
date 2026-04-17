@@ -1,0 +1,94 @@
+# Frontend (Vite build served by nginx).
+#
+# The image bakes ``VITE_API_BASE_URL=http://localhost:5000`` in at build
+# time (Vite inlines env vars into the bundle). That URL keeps working
+# in-cluster because the kind config publishes the backend NodePort on
+# the host's port 5000 — the user's browser talks to the host, not to
+# the cluster's internal network.
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+  namespace: todoapp
+  labels:
+    app.kubernetes.io/name: frontend
+    app.kubernetes.io/component: web
+    app.kubernetes.io/part-of: todoapp
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: frontend
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: frontend
+        app.kubernetes.io/component: web
+        app.kubernetes.io/part-of: todoapp
+    spec:
+      containers:
+        - name: frontend
+          image: todoapp-frontend:local
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 80
+          resources:
+            requests:
+              cpu: "25m"
+              memory: "32Mi"
+            limits:
+              cpu: "200m"
+              memory: "128Mi"
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 3
+            periodSeconds: 5
+            timeoutSeconds: 2
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+              # nginx's entrypoint runs as root and needs a handful of caps:
+              # - NET_BIND_SERVICE: bind to port 80 (<1024)
+              # - CHOWN / DAC_OVERRIDE: chown /var/cache/nginx/* on startup
+              # - SETUID / SETGID: drop the worker processes to the `nginx` user
+              add:
+                - NET_BIND_SERVICE
+                - CHOWN
+                - DAC_OVERRIDE
+                - SETUID
+                - SETGID
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend
+  namespace: todoapp
+  labels:
+    app.kubernetes.io/name: frontend
+    app.kubernetes.io/component: web
+    app.kubernetes.io/part-of: todoapp
+spec:
+  type: NodePort
+  selector:
+    app.kubernetes.io/name: frontend
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
+      nodePort: 30080

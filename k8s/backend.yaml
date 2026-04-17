@@ -1,0 +1,128 @@
+# Backend (Flask + Gunicorn):
+#   - ConfigMap for non-secret env (Mongo URI, DB name, port).
+#   - Secret for JWT signing key (templated; filled in by bring-up script).
+#   - Deployment (2 replicas, non-root, resource-bounded, probed).
+#   - NodePort Service exposing the backend on host :5000 via the
+#     matching kind extraPortMapping in k8s/kind-cluster.yaml.
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backend-config
+  namespace: todoapp
+  labels:
+    app.kubernetes.io/name: backend
+    app.kubernetes.io/component: api
+    app.kubernetes.io/part-of: todoapp
+data:
+  MONGO_URI: "mongodb://mongo.todoapp.svc.cluster.local:27017"
+  MONGO_DB_NAME: "todoapp"
+  PORT: "5000"
+---
+# Template secret. The bring-up script overrides this by creating a
+# secret with a real JWT_SECRET_KEY using ``kubectl create secret``.
+# Keeping a committed placeholder documents the expected shape and
+# means ``kubectl apply -k k8s`` works on a fresh cluster (the script
+# then replaces this Secret in-place).
+apiVersion: v1
+kind: Secret
+metadata:
+  name: backend-secrets
+  namespace: todoapp
+  labels:
+    app.kubernetes.io/name: backend
+    app.kubernetes.io/component: api
+    app.kubernetes.io/part-of: todoapp
+type: Opaque
+stringData:
+  JWT_SECRET_KEY: "placeholder-replace-via-kubectl-create-secret"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  namespace: todoapp
+  labels:
+    app.kubernetes.io/name: backend
+    app.kubernetes.io/component: api
+    app.kubernetes.io/part-of: todoapp
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: backend
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: backend
+        app.kubernetes.io/component: api
+        app.kubernetes.io/part-of: todoapp
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+        runAsGroup: 1001
+      containers:
+        - name: backend
+          image: todoapp-backend:local
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 5000
+          envFrom:
+            - configMapRef:
+                name: backend-config
+            - secretRef:
+                name: backend-secrets
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "256Mi"
+          readinessProbe:
+            httpGet:
+              path: /docs
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /docs
+              port: http
+            initialDelaySeconds: 20
+            periodSeconds: 20
+            timeoutSeconds: 5
+            failureThreshold: 3
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false
+            capabilities:
+              drop: ["ALL"]
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend
+  namespace: todoapp
+  labels:
+    app.kubernetes.io/name: backend
+    app.kubernetes.io/component: api
+    app.kubernetes.io/part-of: todoapp
+spec:
+  type: NodePort
+  selector:
+    app.kubernetes.io/name: backend
+  ports:
+    - name: http
+      port: 5000
+      targetPort: http
+      nodePort: 30050
