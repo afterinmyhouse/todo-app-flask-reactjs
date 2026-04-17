@@ -1,5 +1,6 @@
 from marshmallow import Schema, fields
 from flaskr.schemas.plain_schema import (
+    PlainCreateProjectSchema,
     PlainRegisterSchema,
     PlainSignInSchema,
     PlainTagSchema,
@@ -50,3 +51,14 @@ class TaskSchema(PlainTaskSchema):
 
 class UpdateTaskSchema(PlainTaskSchema):
     pass
+
+
+class CreateProjectSchema(PlainCreateProjectSchema):
+    """Payload for creating a project."""
+
+
+class ProjectSchema(Schema):
+    id = fields.Str(required=True)
+    name = fields.Str(required=True)
+    description = fields.Str(required=True)
+    created_at = fields.DateTime(required=True, data_key="createdAt")

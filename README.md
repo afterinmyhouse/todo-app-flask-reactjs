@@ -172,10 +172,50 @@ Everything related to the API is inside `flaskr/routes`. The following table sum
 | `DELETE`    | */api/v1/users/account* | Delete a user account                   |
 | `GET`       | */api/v1/tags*          | Get a list of tags                      |
 | `POST`      | */api/v1/tags*          | Create a new tag                        |
+| `POST`      | */api/v1/add-project*   | Create a project (**JWT required**)     |
 | `POST`      | */api/v1/tasks*         | Create a new task                       |
 | `GET`       | */api/v1/tasks/user*    | Get a list of all tasks on user         |
 | `PUT`       | */api/v1/tasks/id*      | Update a task                           |
 | `DELETE`    | */api/v1/tasks/id*      | Delete a task                           |
+
+#### POST `/api/v1/add-project`
+
+Creates a new project for the authenticated user.
+
+- Authentication: `Authorization: Bearer <accessToken>`
+- Content-Type: `application/json`
+- Request body:
+  - `name` (string, required, 1-60 chars)
+  - `description` (string, optional, max 280 chars; defaults to empty string)
+
+Example cURL:
+
+```shell
+curl -X POST "http://localhost:5000/api/v1/add-project" \
+  -H "Authorization: Bearer <accessToken>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Roadmap",
+    "description": "Quarterly planning board"
+  }'
+```
+
+Success response (`201 Created`):
+
+```json
+{
+  "id": "6800033b4f0f4e7f8e735d7a",
+  "name": "Roadmap",
+  "description": "Quarterly planning board",
+  "createdAt": "2026-04-17T10:30:42.112000+00:00"
+}
+```
+
+Error responses:
+- `401` `AUTH_REQUIRED` when token is missing
+- `401` `INVALID_TOKEN_SUBJECT` when JWT subject is invalid
+- `409` `PROJECT_EXISTS` when the same project name already exists for that user
+- `422` `VALIDATION_ERROR` when request payload fails schema validation
 
 ### API error handling
 

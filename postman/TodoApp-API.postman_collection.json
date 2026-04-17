@@ -515,6 +515,61 @@
           ]
         }
       ]
+    },
+    {
+      "name": "Projects",
+      "item": [
+        {
+          "name": "Create project",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Roadmap\",\n  \"description\": \"Quarterly planning board\"\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/add-project",
+            "description": "**JWT required.** Creates a project for the authenticated user. `name` is required (1-60 chars), `description` is optional (max 280 chars). Duplicate names are rejected per-user (case-insensitive)."
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"id\": \"6800033b4f0f4e7f8e735d7a\",\n  \"name\": \"Roadmap\",\n  \"description\": \"Quarterly planning board\",\n  \"createdAt\": \"2026-04-17T10:30:42.112000+00:00\"\n}"
+            },
+            {
+              "name": "401 Unauthorized — missing token",
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"error\": {\n    \"code\": \"AUTH_REQUIRED\",\n    \"message\": \"Authentication required\",\n    \"httpStatus\": 401,\n    \"details\": {}\n  }\n}"
+            },
+            {
+              "name": "409 Conflict — duplicate name",
+              "status": "Conflict",
+              "code": 409,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"error\": {\n    \"code\": \"PROJECT_EXISTS\",\n    \"message\": \"Project already exists\",\n    \"httpStatus\": 409,\n    \"details\": {\n      \"field\": \"name\"\n    }\n  }\n}"
+            },
+            {
+              "name": "422 Unprocessable Entity — validation",
+              "status": "Unprocessable Entity",
+              "code": 422,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"error\": {\n    \"code\": \"VALIDATION_ERROR\",\n    \"message\": \"Unprocessable Entity\",\n    \"httpStatus\": 422,\n    \"details\": {\n      \"validation\": {\n        \"json\": {\n          \"name\": [\n            \"Missing data for required field.\"\n          ]\n        }\n      }\n    }\n  }\n}"
+            }
+          ]
+        }
+      ]
     }
   ]
 }

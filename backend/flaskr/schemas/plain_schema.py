@@ -34,3 +34,8 @@ class PlainTaskSchema(Schema):
         validate=validate.OneOf(["PENDING", "IN_PROGRESS", "COMPLETED"]), required=True
     )
     created_at = fields.DateTime(dump_only=True, data_key="createdAt")
+
+
+class PlainCreateProjectSchema(Schema):
+    name = fields.Str(required=True, validate=validate.Length(min=1, max=60))
+    description = fields.Str(load_default="", validate=validate.Length(max=280))
