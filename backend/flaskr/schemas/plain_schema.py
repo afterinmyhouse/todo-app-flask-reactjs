@@ -39,3 +39,15 @@ class PlainTaskSchema(Schema):
 class PlainCreateProjectSchema(Schema):
     name = fields.Str(required=True, validate=validate.Length(min=1, max=60))
     description = fields.Str(load_default="", validate=validate.Length(max=280))
+
+
+class PlainCreateTaskCommentSchema(Schema):
+    """Body payload for POST /add-task-comment.
+
+    ``taskId`` is the Mongo ObjectId of the task being commented on.
+    ``body`` is the comment text, trimmed server-side; length validated
+    before trimming to prevent a pathological all-whitespace 2000 char body.
+    """
+
+    task_id = fields.Str(required=True, data_key="taskId")
+    body = fields.Str(required=True, validate=validate.Length(min=1, max=2000))

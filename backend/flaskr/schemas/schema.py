@@ -1,6 +1,7 @@
 from marshmallow import Schema, fields
 from flaskr.schemas.plain_schema import (
     PlainCreateProjectSchema,
+    PlainCreateTaskCommentSchema,
     PlainRegisterSchema,
     PlainSignInSchema,
     PlainTagSchema,
@@ -61,4 +62,15 @@ class ProjectSchema(Schema):
     id = fields.Str(required=True)
     name = fields.Str(required=True)
     description = fields.Str(required=True)
+    created_at = fields.DateTime(required=True, data_key="createdAt")
+
+
+class CreateTaskCommentSchema(PlainCreateTaskCommentSchema):
+    """Payload for creating a task comment."""
+
+
+class TaskCommentSchema(Schema):
+    id = fields.Str(required=True)
+    task_id = fields.Str(required=True, data_key="taskId")
+    body = fields.Str(required=True)
     created_at = fields.DateTime(required=True, data_key="createdAt")

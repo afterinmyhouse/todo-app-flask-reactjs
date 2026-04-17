@@ -517,6 +517,69 @@
       ]
     },
     {
+      "name": "Task Comments",
+      "item": [
+        {
+          "name": "Create task comment",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"taskId\": \"{{taskId}}\",\n  \"body\": \"Looks good, merging after CI.\"\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/add-task-comment",
+            "description": "**JWT required.** Creates a comment on a task owned by the caller. `taskId` must be a valid ObjectId; `body` is trimmed server-side. Cross-user access is reported as **404** (not 403) to avoid existence leakage. Run **Tasks → List my tasks** first so `taskId` is set."
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"id\": \"6800045b4f0f4e7f8e735d7b\",\n  \"taskId\": \"6708e1f1f1f1f1f1f1f1f3c1\",\n  \"body\": \"Looks good, merging after CI.\",\n  \"createdAt\": \"2026-04-17T10:35:01.441000+00:00\"\n}"
+            },
+            {
+              "name": "400 Bad Request — invalid taskId",
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"error\": {\n    \"code\": \"INVALID_TASK\",\n    \"message\": \"Invalid task\",\n    \"httpStatus\": 400,\n    \"details\": {\n      \"field\": \"taskId\"\n    }\n  }\n}"
+            },
+            {
+              "name": "401 Unauthorized — missing token",
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"error\": {\n    \"code\": \"AUTH_REQUIRED\",\n    \"message\": \"Authentication required\",\n    \"httpStatus\": 401,\n    \"details\": {}\n  }\n}"
+            },
+            {
+              "name": "404 Not Found — not owner",
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"error\": {\n    \"code\": \"TASK_NOT_FOUND\",\n    \"message\": \"Task not found\",\n    \"httpStatus\": 404,\n    \"details\": {\n      \"resource\": \"task\"\n    }\n  }\n}"
+            },
+            {
+              "name": "422 Unprocessable Entity — validation",
+              "status": "Unprocessable Entity",
+              "code": 422,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"error\": {\n    \"code\": \"VALIDATION_ERROR\",\n    \"message\": \"Unprocessable Entity\",\n    \"httpStatus\": 422,\n    \"details\": {\n      \"validation\": {\n        \"json\": {\n          \"body\": [\n            \"Missing data for required field.\"\n          ]\n        }\n      }\n    }\n  }\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
       "name": "Projects",
       "item": [
         {

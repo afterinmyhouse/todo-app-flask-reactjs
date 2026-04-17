@@ -173,6 +173,7 @@ Everything related to the API is inside `flaskr/routes`. The following table sum
 | `GET`       | */api/v1/tags*          | Get a list of tags                      |
 | `POST`      | */api/v1/tags*          | Create a new tag                        |
 | `POST`      | */api/v1/add-project*   | Create a project (**JWT required**)     |
+| `POST`      | */api/v1/add-task-comment* | Create a comment on an owned task (**JWT required**) |
 | `POST`      | */api/v1/tasks*         | Create a new task                       |
 | `GET`       | */api/v1/tasks/user*    | Get a list of all tasks on user         |
 | `PUT`       | */api/v1/tasks/id*      | Update a task                           |
@@ -216,6 +217,57 @@ Error responses:
 - `401` `INVALID_TOKEN_SUBJECT` when JWT subject is invalid
 - `409` `PROJECT_EXISTS` when the same project name already exists for that user
 - `422` `VALIDATION_ERROR` when request payload fails schema validation
+
+#### POST `/api/v1/add-task-comment`
+
+Creates a comment on a task owned by the authenticated user.
+
+- Authentication: `Authorization: Bearer <accessToken>`
+- Content-Type: `application/json`
+- Request body:
+  - `taskId` (string, required, Mongo ObjectId of an owned task)
+  - `body` (string, required, 1-2000 chars; trimmed server-side — all-whitespace bodies are rejected as `422`)
+
+Example cURL:
+
+```shell
+curl -X POST "http://localhost:5000/api/v1/add-task-comment" \
+  -H "Authorization: Bearer <accessToken>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "taskId": "6708e1f1f1f1f1f1f1f1f3c1",
+    "body": "Looks good, merging after CI."
+  }'
+```
+
+Success response (`201 Created`):
+
+```json
+{
+  "id": "6800045b4f0f4e7f8e735d7b",
+  "taskId": "6708e1f1f1f1f1f1f1f1f3c1",
+  "body": "Looks good, merging after CI.",
+  "createdAt": "2026-04-17T10:35:01.441000+00:00"
+}
+```
+
+Error responses:
+- `400` `INVALID_TASK` when `taskId` is not a valid Mongo ObjectId
+- `401` `AUTH_REQUIRED` when token is missing
+- `401` `INVALID_TOKEN_SUBJECT` when JWT subject is invalid
+- `404` `TASK_NOT_FOUND` when the task does not exist or is not owned by the caller (existence is not leaked)
+- `422` `VALIDATION_ERROR` when request payload fails schema validation (missing fields or blank body)
+
+### Quality Improvements vs. Previous Endpoint
+
+The `/add-task-comment` iteration applied these concrete improvements over the `/add-project` baseline — see [`docs/API_CHANGELOG.md`](./docs/API_CHANGELOG.md) for the full rationale and the repeatable workflow:
+
+- **DRY auth plumbing.** Introduced `flaskr.utils.resolve_user_oid()` and `flaskr.utils.parse_object_id()`. Duplicated `try/except InvalidId` blocks were removed from `ProjectController` and never copy-pasted into the new controller.
+- **Single monkeypatch surface.** Controllers now call `mongo.get_db()` via `from flaskr import mongo`, so tests patch `flaskr.mongo.get_db` exactly once; adding more endpoints no longer requires editing `conftest.py`.
+- **Generic in-memory DB.** `FakeDb.__getattr__` auto-provisions `FakeCollection` instances on access, so new collections (`task_comments`, `tasks`, …) work without test-fixture changes.
+- **Session-scoped `app` fixture.** `create_app` runs once per session instead of per test, keeping wall-clock time flat as endpoint count grows.
+- **Parametrized validation tests.** The three "missing field" cases for `/add-task-comment` are a single `pytest.mark.parametrize` block instead of three copy-pasted tests.
+- **Stronger authorization semantics.** `/add-task-comment` intentionally returns `404 TASK_NOT_FOUND` (not `403`) when the task belongs to another user, avoiding existence leakage — documented explicitly above.
 
 ### API error handling
 
