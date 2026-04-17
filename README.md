@@ -173,6 +173,7 @@ Everything related to the API is inside `flaskr/routes`. The following table sum
 | `GET`       | */api/v1/tags*          | Get a list of tags                      |
 | `POST`      | */api/v1/tags*          | Create a new tag                        |
 | `POST`      | */api/v1/add-project*   | Create a project (**JWT required**)     |
+| `POST`      | */api/v1/add-project-with-tasks* | Create a project and its initial tasks atomically (**JWT required**) |
 | `POST`      | */api/v1/add-task-comment* | Create a comment on an owned task (**JWT required**) |
 | `POST`      | */api/v1/tasks*         | Create a new task                       |
 | `GET`       | */api/v1/tasks/user*    | Get a list of all tasks on user         |
@@ -258,9 +259,100 @@ Error responses:
 - `404` `TASK_NOT_FOUND` when the task does not exist or is not owned by the caller (existence is not leaked)
 - `422` `VALIDATION_ERROR` when request payload fails schema validation (missing fields or blank body)
 
-### Quality Improvements vs. Previous Endpoint
+#### POST `/api/v1/add-project-with-tasks`
 
-The `/add-task-comment` iteration applied these concrete improvements over the `/add-project` baseline — see [`docs/API_CHANGELOG.md`](./docs/API_CHANGELOG.md) for the full rationale and the repeatable workflow:
+Creates a project together with its initial tasks (1..50) in a single request.
+The endpoint is **atomic from the caller's perspective** — if anything fails
+part-way through persistence, the project (and any tasks already written) are
+rolled back via compensating deletes, so clients never observe a half-applied
+state. On a replica-set deployment this block can be swapped for a native
+MongoDB multi-document transaction without changing the request/response
+contract (see `flaskr/controllers/project_with_tasks_controller.py`).
+
+- Authentication: `Authorization: Bearer <accessToken>`
+- Content-Type: `application/json`
+- Request body:
+  - `name` (string, required, 1-60 chars, must not be blank after trim)
+  - `description` (string, optional, max 280 chars; defaults to empty string)
+  - `tasks` (array, required, 1..50 items). Each task:
+    - `title` (string, required, 1-200 chars, must not be blank after trim)
+    - `content` (string, optional, max 2000 chars; defaults to empty)
+    - `status` (string, optional; one of `PENDING`, `IN_PROGRESS`, `COMPLETED`; defaults to `PENDING`)
+    - `tagId` (string, optional; existing tag ObjectId)
+- Extra validation beyond the schema:
+  - Project name is unique **per user** (case- and whitespace-insensitive).
+  - Task titles must be unique **within the request** (case- and whitespace-insensitive).
+  - Every referenced `tagId` must exist.
+
+Example cURL:
+
+```shell
+curl -X POST "http://localhost:5000/api/v1/add-project-with-tasks" \
+  -H "Authorization: Bearer <accessToken>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Launch",
+    "description": "Q2 launch plan",
+    "tasks": [
+      { "title": "Write spec", "status": "IN_PROGRESS" },
+      { "title": "Draft UI",   "tagId": "6708e1f1f1f1f1f1f1f1f2a1" }
+    ]
+  }'
+```
+
+Success response (`201 Created`):
+
+```json
+{
+  "id": "6800099b4f0f4e7f8e735d90",
+  "name": "Launch",
+  "description": "Q2 launch plan",
+  "createdAt": "2026-04-17T11:02:11.912000+00:00",
+  "tasks": [
+    {
+      "id": "6800099b4f0f4e7f8e735d91",
+      "title": "Write spec",
+      "content": "",
+      "status": "IN_PROGRESS",
+      "tagName": null,
+      "createdAt": "2026-04-17T11:02:11.912000+00:00"
+    },
+    {
+      "id": "6800099b4f0f4e7f8e735d92",
+      "title": "Draft UI",
+      "content": "",
+      "status": "PENDING",
+      "tagName": "Work",
+      "createdAt": "2026-04-17T11:02:11.912000+00:00"
+    }
+  ]
+}
+```
+
+Error responses:
+- `400` `INVALID_TAG` when a task's `tagId` is not a valid Mongo ObjectId (the `details.field` pinpoints which task, e.g. `tasks[0].tagId`)
+- `401` `AUTH_REQUIRED` / `INVALID_TOKEN_SUBJECT`
+- `404` `TAG_NOT_FOUND` when a referenced tag does not exist
+- `409` `PROJECT_EXISTS` when the caller already owns a project with the same name (case-insensitive)
+- `422` `VALIDATION_ERROR` for schema failures (missing `name`, missing `tasks`, empty `tasks`, >50 tasks, missing task `title`, blank fields after trim)
+- `422` `DUPLICATE_TASK_TITLE` when two tasks in the same request share a title (case-insensitive); `details.field` identifies the offending index (e.g. `tasks[1].title`)
+- `500` — if a runtime DB failure occurs between entity inserts, the response is a 500 and the compensation logic removes the partially-written project and tasks before the error surfaces
+
+### Quality Improvements vs. Previous Endpoints
+
+Each run of the "API Addition End-to-End" workflow builds on the previous one.
+See [`docs/API_CHANGELOG.md`](./docs/API_CHANGELOG.md) for the full per-run
+changelog, impact metrics, and the repeatable workflow checklist. Highlights:
+
+- **Run 3 (`/add-project-with-tasks`)** — handles **two related entities** in
+  a single request. Introduces a three-phase controller structure
+  (*pre-validate → persist → compensate on partial failure*), explicit
+  index-scoped validation error paths (e.g. `tasks[0].tagId`), and the
+  `DUPLICATE_TASK_TITLE` code for in-request collisions. Compensation-based
+  atomicity is exercised directly by a test that simulates a mid-flight DB
+  failure and asserts the project + any inserted tasks are rolled back.
+- **Run 2 (`/add-task-comment`)** applied these improvements over the
+  `/add-project` baseline:
 
 - **DRY auth plumbing.** Introduced `flaskr.utils.resolve_user_oid()` and `flaskr.utils.parse_object_id()`. Duplicated `try/except InvalidId` blocks were removed from `ProjectController` and never copy-pasted into the new controller.
 - **Single monkeypatch surface.** Controllers now call `mongo.get_db()` via `from flaskr import mongo`, so tests patch `flaskr.mongo.get_db` exactly once; adding more endpoints no longer requires editing `conftest.py`.

@@ -580,6 +580,85 @@
       ]
     },
     {
+      "name": "Project With Tasks",
+      "item": [
+        {
+          "name": "Create project with tasks",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Launch\",\n  \"description\": \"Q2 launch plan\",\n  \"tasks\": [\n    { \"title\": \"Write spec\", \"status\": \"IN_PROGRESS\" },\n    { \"title\": \"Draft UI\", \"tagId\": \"{{tagId}}\" }\n  ]\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/add-project-with-tasks",
+            "description": "**JWT required.** Creates a project and 1..50 initial tasks atomically. Project name must be unique per user (case-insensitive). Task titles must be unique within the same request. Every `tagId` must resolve to an existing tag. On any mid-flight DB failure the project and any inserted tasks are rolled back via compensating deletes. Use **Tags → List tags** to populate `{{tagId}}` first."
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"id\": \"6800099b4f0f4e7f8e735d90\",\n  \"name\": \"Launch\",\n  \"description\": \"Q2 launch plan\",\n  \"createdAt\": \"2026-04-17T11:02:11.912000+00:00\",\n  \"tasks\": [\n    {\n      \"id\": \"6800099b4f0f4e7f8e735d91\",\n      \"title\": \"Write spec\",\n      \"content\": \"\",\n      \"status\": \"IN_PROGRESS\",\n      \"tagName\": null,\n      \"createdAt\": \"2026-04-17T11:02:11.912000+00:00\"\n    },\n    {\n      \"id\": \"6800099b4f0f4e7f8e735d92\",\n      \"title\": \"Draft UI\",\n      \"content\": \"\",\n      \"status\": \"PENDING\",\n      \"tagName\": \"Work\",\n      \"createdAt\": \"2026-04-17T11:02:11.912000+00:00\"\n    }\n  ]\n}"
+            },
+            {
+              "name": "400 Bad Request — invalid tagId",
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"error\": {\n    \"code\": \"INVALID_TAG\",\n    \"message\": \"Invalid tag\",\n    \"httpStatus\": 400,\n    \"details\": {\n      \"field\": \"tasks[0].tagId\"\n    }\n  }\n}"
+            },
+            {
+              "name": "401 Unauthorized — missing token",
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"error\": {\n    \"code\": \"AUTH_REQUIRED\",\n    \"message\": \"Authentication required\",\n    \"httpStatus\": 401,\n    \"details\": {}\n  }\n}"
+            },
+            {
+              "name": "404 Not Found — unknown tag",
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"error\": {\n    \"code\": \"TAG_NOT_FOUND\",\n    \"message\": \"Tag not found\",\n    \"httpStatus\": 404,\n    \"details\": {\n      \"resource\": \"tag\",\n      \"field\": \"tagId\",\n      \"value\": \"6708e1f1f1f1f1f1f1f1f2aa\"\n    }\n  }\n}"
+            },
+            {
+              "name": "409 Conflict — duplicate project name",
+              "status": "Conflict",
+              "code": 409,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"error\": {\n    \"code\": \"PROJECT_EXISTS\",\n    \"message\": \"Project already exists\",\n    \"httpStatus\": 409,\n    \"details\": {\n      \"field\": \"name\"\n    }\n  }\n}"
+            },
+            {
+              "name": "422 Unprocessable Entity — duplicate task title",
+              "status": "Unprocessable Entity",
+              "code": 422,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"error\": {\n    \"code\": \"DUPLICATE_TASK_TITLE\",\n    \"message\": \"Duplicate task title in request\",\n    \"httpStatus\": 422,\n    \"details\": {\n      \"field\": \"tasks[1].title\",\n      \"value\": \"Write spec\"\n    }\n  }\n}"
+            },
+            {
+              "name": "422 Unprocessable Entity — schema validation",
+              "status": "Unprocessable Entity",
+              "code": 422,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"error\": {\n    \"code\": \"VALIDATION_ERROR\",\n    \"message\": \"Unprocessable Entity\",\n    \"httpStatus\": 422,\n    \"details\": {\n      \"validation\": {\n        \"json\": {\n          \"tasks\": {\n            \"0\": {\n              \"title\": [\n                \"Missing data for required field.\"\n              ]\n            }\n          }\n        }\n      }\n    }\n  }\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
       "name": "Projects",
       "item": [
         {

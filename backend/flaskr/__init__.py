@@ -7,6 +7,7 @@ from flaskr.routes.user_route import bp as user_route
 from flaskr.routes.tag_route import bp as tag_route
 from flaskr.routes.task_route import bp as task_route
 from flaskr.routes.project_route import bp as project_route
+from flaskr.routes.project_with_tasks_route import bp as project_with_tasks_route
 from flaskr.routes.task_comment_route import bp as task_comment_route
 
 
@@ -27,6 +28,7 @@ def create_app(test_config=None):
     api.register_blueprint(tag_route, url_prefix="/api/v1")
     api.register_blueprint(task_route, url_prefix="/api/v1")
     api.register_blueprint(project_route, url_prefix="/api/v1")
+    api.register_blueprint(project_with_tasks_route, url_prefix="/api/v1")
     api.register_blueprint(task_comment_route, url_prefix="/api/v1")
 
     return app

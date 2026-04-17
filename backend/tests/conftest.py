@@ -33,15 +33,28 @@ class _InsertResult:
         self.inserted_id = inserted_id
 
 
+class _DeleteResult:
+    def __init__(self, deleted_count: int):
+        self.deleted_count = deleted_count
+
+
 class FakeCollection:
-    """Minimal in-memory stand-in for a PyMongo collection."""
+    """Minimal in-memory stand-in for a PyMongo collection.
+
+    Intentionally supports only the surface area our controllers exercise:
+    ``find_one``, ``insert_one``, and ``delete_one``. Plus a small test
+    helper ``insert`` for seeding documents inside tests.
+    """
 
     def __init__(self) -> None:
         self._docs: list[dict] = []
 
+    def _matches(self, doc: dict, query: dict) -> bool:
+        return all(doc.get(key) == value for key, value in query.items())
+
     def find_one(self, query: dict) -> dict | None:
         for doc in self._docs:
-            if all(doc.get(key) == value for key, value in query.items()):
+            if self._matches(doc, query):
                 return doc
         return None
 
@@ -50,6 +63,13 @@ class FakeCollection:
         stored.setdefault("_id", ObjectId())
         self._docs.append(stored)
         return _InsertResult(stored["_id"])
+
+    def delete_one(self, query: dict) -> _DeleteResult:
+        for index, doc in enumerate(self._docs):
+            if self._matches(doc, query):
+                del self._docs[index]
+                return _DeleteResult(1)
+        return _DeleteResult(0)
 
     def insert(self, doc: dict) -> ObjectId:
         """Test helper: seed a document and return its id."""

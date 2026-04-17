@@ -41,6 +41,43 @@ class PlainCreateProjectSchema(Schema):
     description = fields.Str(load_default="", validate=validate.Length(max=280))
 
 
+class PlainTaskInProjectSchema(Schema):
+    """A single initial task embedded inside a POST /add-project-with-tasks payload.
+
+    Kept separate from ``PlainTaskSchema`` because this variant:
+
+    * Does not require ``content`` (initial tasks often start as a title only).
+    * Does not require ``tagId`` (tags are optional for this shortcut endpoint).
+    * Defaults ``status`` to ``PENDING`` so the caller can omit it.
+    """
+
+    title = fields.Str(required=True, validate=validate.Length(min=1, max=200))
+    content = fields.Str(load_default="", validate=validate.Length(max=2000))
+    status = fields.Str(
+        load_default="PENDING",
+        validate=validate.OneOf(["PENDING", "IN_PROGRESS", "COMPLETED"]),
+    )
+    tag_id = fields.Str(load_default=None, allow_none=True, data_key="tagId")
+
+
+class PlainCreateProjectWithTasksSchema(Schema):
+    """Top-level payload for POST /add-project-with-tasks.
+
+    Bundles the project fields (same rules as /add-project) with an
+    ``tasks`` array that must contain 1..50 items. The controller
+    performs additional cross-field validation (e.g. rejecting
+    duplicate task titles within the request).
+    """
+
+    name = fields.Str(required=True, validate=validate.Length(min=1, max=60))
+    description = fields.Str(load_default="", validate=validate.Length(max=280))
+    tasks = fields.List(
+        fields.Nested(PlainTaskInProjectSchema),
+        required=True,
+        validate=validate.Length(min=1, max=50),
+    )
+
+
 class PlainCreateTaskCommentSchema(Schema):
     """Body payload for POST /add-task-comment.
 
