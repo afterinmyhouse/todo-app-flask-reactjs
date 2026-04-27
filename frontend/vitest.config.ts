@@ -14,6 +14,11 @@ export default defineConfig({
     setupFiles: ["./src/test/setup.ts"],
     globals: true,
     css: true,
+    coverage: {
+      provider: "v8",
+      reporter: ["text", "text-summary", "html"],
+      reportsDirectory: path.resolve(__dirname, "../coverage/frontend-html"),
+    },
   },
 });
 

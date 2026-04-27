@@ -10,3 +10,6 @@
 
 # Docker bind-mount / build artifacts that may land at the repo root.
 *.pid
+
+# pytest-cov / Vitest HTML output (see scripts/coverage.sh).
+/coverage/
