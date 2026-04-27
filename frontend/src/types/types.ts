@@ -3,10 +3,10 @@ export type Tag = {
   name: string;
 };
 
-export type Status =
-  | "TaskStatus.PENDING"
-  | "TaskStatus.IN_PROGRESS"
-  | "TaskStatus.COMPLETED";
+/** Backend task status (API / Mongo, see PlainTaskSchema). */
+export type ProjectTaskStatus = "PENDING" | "IN_PROGRESS" | "COMPLETED";
+
+export type Status = ProjectTaskStatus;
 
 export type Task = {
   id: string;
@@ -16,9 +16,6 @@ export type Task = {
   createdAt: Date;
   tagName: string;
 };
-
-/** Backend status values exchanged with POST /add-project-with-tasks. */
-export type ProjectTaskStatus = "PENDING" | "IN_PROGRESS" | "COMPLETED";
 
 /** Response shape for POST /api/v1/add-project. */
 export type Project = {

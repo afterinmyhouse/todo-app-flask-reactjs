@@ -31,22 +31,17 @@ interface IProps {
 
 export const EditForm = ({ task }: IProps) => {
   const mutation = useUpdateTaskMutation();
-  const allStatus: { value: string; name: string }[] = [
+  const allStatus: { value: Status; name: string }[] = [
     { value: "PENDING", name: "Pending" },
     { value: "IN_PROGRESS", name: "In Progress" },
     { value: "COMPLETED", name: "Completed" },
   ];
-  const currentStatus: Record<Status, string> = {
-    "TaskStatus.PENDING": "PENDING",
-    "TaskStatus.IN_PROGRESS": "IN_PROGRESS",
-    "TaskStatus.COMPLETED": "COMPLETED",
-  };
   const form = useForm<TEditFormSchema>({
     resolver: zodResolver(EditFormSchema),
     defaultValues: {
       title: task.title,
       content: task.content,
-      status: currentStatus[task.status],
+      status: task.status,
     },
   });
 
