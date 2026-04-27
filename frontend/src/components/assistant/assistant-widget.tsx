@@ -7,6 +7,11 @@ import {
   getOpeningMessage,
   getReply,
 } from "@/lib/assistant-agent";
+import {
+  fetchEntitySearch,
+  formatEntitySearchResults,
+  parseEntitySearchQuery,
+} from "@/lib/entity-search";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
@@ -37,7 +42,7 @@ function renderBoldSegments(text: string) {
 
 export function AssistantWidget() {
   const location = useLocation();
-  const { isLoggedIn } = useAuthStore();
+  const { isLoggedIn, token } = useAuthStore();
   const panelId = useId();
   const listRef = useRef<HTMLDivElement>(null);
 
@@ -84,6 +89,61 @@ export function AssistantWidget() {
     const text = draft.trim();
     if (!text) return;
     const userMsg: ChatMessage = { id: nextId(), role: "user", content: text };
+    setDraft("");
+
+    const searchQuery = parseEntitySearchQuery(text);
+    if (searchQuery) {
+      if (!isLoggedIn || !token) {
+        setMessages((prev) => [
+          ...prev,
+          userMsg,
+          {
+            id: nextId(),
+            role: "assistant",
+            content:
+              "**Search** uses your signed-in session. Sign in from the home page, open the assistant again, then try e.g. `search meeting`.",
+          },
+        ]);
+        return;
+      }
+
+      const pendingId = nextId();
+      setMessages((prev) => [
+        ...prev,
+        userMsg,
+        {
+          id: pendingId,
+          role: "assistant",
+          content: "Searching your workspace…",
+        },
+      ]);
+
+      void fetchEntitySearch(searchQuery)
+        .then((data) => {
+          setMessages((prev) =>
+            prev.map((m) =>
+              m.id === pendingId
+                ? { ...m, content: formatEntitySearchResults(data) }
+                : m,
+            ),
+          );
+        })
+        .catch(() => {
+          setMessages((prev) =>
+            prev.map((m) =>
+              m.id === pendingId
+                ? {
+                    ...m,
+                    content:
+                      "Search could not complete (network or session). Check that the API is running and you are still signed in.",
+                  }
+                : m,
+            ),
+          );
+        });
+      return;
+    }
+
     const answer = getReply(text, context);
     const botMsg: ChatMessage = {
       id: nextId(),
@@ -91,7 +151,6 @@ export function AssistantWidget() {
       content: answer,
     };
     setMessages((prev) => [...prev, userMsg, botMsg]);
-    setDraft("");
   };
 
   const onKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -156,7 +215,7 @@ export function AssistantWidget() {
                 value={draft}
                 onChange={(e) => setDraft(e.target.value)}
                 onKeyDown={onKeyDown}
-                placeholder="Ask about tasks, tags, projects…"
+                placeholder="Ask or type: search meeting…"
                 rows={2}
                 className="min-h-[60px] resize-none text-sm"
                 aria-label="Message to assistant"
@@ -172,8 +231,8 @@ export function AssistantWidget() {
               </Button>
             </div>
             <p className="mt-2 px-1 text-[10px] leading-tight text-muted-foreground">
-              Tips are generated locally in your browser. Messages are not sent to
-              an AI cloud service.
+              Tips use local rules. Commands starting with “search” or “find” query your
+              account on this app’s API with your session token; no third-party LLM.
             </p>
           </div>
         </div>

@@ -39,3 +39,32 @@ export type ProjectTask = {
 export type ProjectWithTasks = Project & {
   tasks: ProjectTask[];
 };
+
+/** GET /api/v1/search — structured workspace hits for the assistant. */
+export type EntitySearchTaskHit = {
+  id: string;
+  title: string;
+  status: string;
+  tagName?: string | null;
+  snippet?: string;
+};
+
+export type EntitySearchTagHit = {
+  id: string;
+  name: string;
+};
+
+export type EntitySearchProjectHit = {
+  id: string;
+  name: string;
+  description: string;
+};
+
+export type EntitySearchResponse = {
+  query: string;
+  results: {
+    tags: EntitySearchTagHit[];
+    tasks: EntitySearchTaskHit[];
+    projects: EntitySearchProjectHit[];
+  };
+};

@@ -1,9 +1,9 @@
 /**
  * Lightweight contextual “agent” for in-app guidance.
  *
- * Privacy: all logic runs in the browser. No messages are sent to external
- * LLM APIs or logged to the backend. Do not pass secrets, tokens, or passwords
- * into this layer.
+ * Privacy: rule-based replies run in the browser with no cloud LLM. Optional
+ * **`search …`** commands call your own backend (`GET /api/v1/search`) using the
+ * same JWT as the app—do not paste secrets into the chat.
  */
 
 export type AssistantContext = {
@@ -25,7 +25,7 @@ export function getOpeningMessage(ctx: AssistantContext): string {
   }
 
   if (pathname === "/dashboard" || pathname === "/dashboard/") {
-    return "You are on the **Dashboard**. Use tags to filter tasks, or add tasks with the **New task** action. Try asking: “How do tags work?”";
+    return "You are on the **Dashboard**. Use tags to filter tasks, or add tasks with the **New task** action. Type **`search`** plus a keyword to look up your tasks, tags, and projects (e.g. `search meeting`).";
   }
   if (pathname.startsWith("/dashboard/projects/new-with-tasks")) {
     return "You are creating a **project with initial tasks** (up to 50). Task titles in one request must be unique. Ask: “What if a tag is missing?”";
@@ -85,5 +85,8 @@ export function getReply(userMessage: string, ctx: AssistantContext): string {
     return getOpeningMessage(ctx);
   }
 
+  if (ctx.isAuthenticated) {
+    return "Try keywords like **tasks**, **tags**, **projects**, or **`search your-term`** to pull matches from your workspace (your session only). I also show a route tip when you open this panel.";
+  }
   return "I match simple keywords about **tasks**, **tags**, **projects**, and **sign-in**. Rephrase your question, or tell me which screen you are on—I also show a route-specific tip when you open this panel.";
 }

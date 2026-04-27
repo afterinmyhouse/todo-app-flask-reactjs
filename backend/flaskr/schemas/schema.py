@@ -97,3 +97,39 @@ class ProjectWithTasksSchema(Schema):
     description = fields.Str(required=True)
     created_at = fields.DateTime(required=True, data_key="createdAt")
     tasks = fields.List(fields.Nested(TaskInProjectResponseSchema), required=True)
+
+
+# --- GET /search (workspace entity search) ---------------------------------
+
+
+class SearchTagHitSchema(Schema):
+    id = fields.Str(required=True)
+    name = fields.Str(required=True)
+
+
+class SearchTaskHitSchema(Schema):
+    id = fields.Str(required=True)
+    title = fields.Str(required=True)
+    status = fields.Str(required=True)
+    tag_name = fields.Str(required=False, allow_none=True, data_key="tagName")
+    snippet = fields.Str(
+        required=False,
+        metadata={"description": "Short excerpt from task content for context"},
+    )
+
+
+class SearchProjectHitSchema(Schema):
+    id = fields.Str(required=True)
+    name = fields.Str(required=True)
+    description = fields.Str(required=True)
+
+
+class SearchResultsBucketSchema(Schema):
+    tags = fields.List(fields.Nested(SearchTagHitSchema), required=True)
+    tasks = fields.List(fields.Nested(SearchTaskHitSchema), required=True)
+    projects = fields.List(fields.Nested(SearchProjectHitSchema), required=True)
+
+
+class SearchResponseSchema(Schema):
+    query = fields.Str(required=True)
+    results = fields.Nested(SearchResultsBucketSchema, required=True)

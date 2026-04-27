@@ -18,6 +18,7 @@ Design notes (kept intentionally small and dependency-free):
 
 from __future__ import annotations
 
+import re
 from typing import Any, Optional
 
 import pytest
@@ -26,6 +27,56 @@ from flask_jwt_extended import create_access_token
 
 from config import TestConfig
 from flaskr import create_app
+
+
+def _mongo_field_matches(doc: dict, key: str, cond: object) -> bool:
+    if isinstance(cond, dict) and "$regex" in cond:
+        text = str(doc.get(key, "") or "")
+        flags = re.IGNORECASE if "i" in str(cond.get("$options", "")) else 0
+        return re.search(str(cond["$regex"]), text, flags) is not None
+    return doc.get(key) == cond
+
+
+def _mongo_clause_matches(doc: dict, clause: dict) -> bool:
+    return all(_mongo_field_matches(doc, k, v) for k, v in clause.items())
+
+
+def _mongo_query_matches(doc: dict, query: dict) -> bool:
+    for key, val in query.items():
+        if key == "$or":
+            if not any(_mongo_clause_matches(doc, sub) for sub in val):
+                return False
+        else:
+            if not _mongo_field_matches(doc, key, val):
+                return False
+    return True
+
+
+def _mongo_project(doc: dict, projection: dict) -> dict:
+    if projection is None:
+        return dict(doc)
+    out: dict = {}
+    if projection.get("_id", 1) != 0:
+        out["_id"] = doc.get("_id")
+    for key, flag in projection.items():
+        if key == "_id":
+            continue
+        if flag == 1 and key in doc:
+            out[key] = doc[key]
+    return out
+
+
+class FakeCursor:
+    """Minimal stand-in for a PyMongo cursor supporting ``limit`` and iteration."""
+
+    def __init__(self, docs: list[dict]) -> None:
+        self._docs = docs
+
+    def limit(self, n: int) -> FakeCursor:
+        return FakeCursor(self._docs[:n])
+
+    def __iter__(self):
+        return iter(self._docs)
 
 
 class _InsertResult:
@@ -74,6 +125,13 @@ class FakeCollection:
     def insert(self, doc: dict) -> ObjectId:
         """Test helper: seed a document and return its id."""
         return self.insert_one(doc).inserted_id
+
+    def find(self, query: dict, projection: Optional[dict] = None) -> FakeCursor:
+        matched: list[dict] = []
+        for doc in self._docs:
+            if _mongo_query_matches(doc, query):
+                matched.append(_mongo_project(doc, projection) if projection else dict(doc))
+        return FakeCursor(matched)
 
     @property
     def docs(self) -> list[dict]:
