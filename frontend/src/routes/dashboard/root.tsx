@@ -4,6 +4,7 @@ import { useSEO } from "@/hooks/useSEO";
 import { AxiosError } from "axios";
 import { useEffect } from "react";
 import { Navigate, Outlet, useNavigate } from "react-router-dom";
+import { AssistantWidget } from "@/components/assistant/assistant-widget";
 import { Navbar } from "./_components/navbar";
 import { Toaster } from "sonner";
 
@@ -39,6 +40,7 @@ export const DashboardRoot = () => {
         </section>
       </main>
       <Toaster position="top-center" richColors />
+      <AssistantWidget />
     </>
   );
 };

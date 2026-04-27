@@ -1,4 +1,5 @@
 import { Navigate, Outlet } from "react-router-dom";
+import { AssistantWidget } from "@/components/assistant/assistant-widget";
 import { Navbar } from "./_components/navbar";
 import { Toaster } from "sonner";
 import { useSEO } from "@/hooks/useSEO";
@@ -20,6 +21,7 @@ export const LandingRoot = () => {
         <Outlet />
       </main>
       <Toaster position="top-center" richColors />
+      <AssistantWidget />
     </>
   );
 };
