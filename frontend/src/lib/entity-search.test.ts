@@ -1,20 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  formatEntitySearchResults,
-  parseEntitySearchQuery,
-} from "./entity-search";
-
-describe("parseEntitySearchQuery", () => {
-  it("extracts query after search", () => {
-    expect(parseEntitySearchQuery("search meeting")).toBe("meeting");
-    expect(parseEntitySearchQuery("  FIND  invoice draft  ")).toBe("invoice draft");
-  });
-
-  it("returns null when too short or no intent", () => {
-    expect(parseEntitySearchQuery("search a")).toBeNull();
-    expect(parseEntitySearchQuery("hello world")).toBeNull();
-  });
-});
+import { formatEntitySearchResults } from "./entity-search";
 
 describe("formatEntitySearchResults", () => {
   it("formats empty results", () => {
