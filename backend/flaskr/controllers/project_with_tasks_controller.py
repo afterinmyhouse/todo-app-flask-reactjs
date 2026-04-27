@@ -26,7 +26,7 @@ the request shape grows:
 from __future__ import annotations
 
 from datetime import datetime, timezone
-from typing import Any
+from typing import Any, Optional
 
 from bson import ObjectId
 
@@ -161,7 +161,7 @@ def _prepare_tasks(db, tasks_payload: list[dict[str, Any]]):
         seen_title_keys.add(title_key)
 
         tag_raw = raw_task.get("tag_id")
-        tag_oid: ObjectId | None = None
+        tag_oid: Optional[ObjectId] = None
         if tag_raw:
             if tag_raw not in distinct_tag_oids:
                 distinct_tag_oids[tag_raw] = parse_object_id(

@@ -7,15 +7,15 @@
 # ------------
 # * Multi-stage so build toolchain (pip wheels, compilers) is thrown away and
 #   the final image only ships the runtime interpreter + site-packages.
-# * Runtime image is ``python:3.13-slim`` to match the project's documented
-#   development version while keeping the footprint small.
+# * Runtime image is ``python:3.9-slim`` to match the minimum interpreter
+#   supported by pinned dependencies (Flask 3.1+, etc.) while keeping the image small.
 # * Runs as a non-root user. The container listens on ``$PORT`` (default
 #   5000) so the same image works in compose, Cloud Run, etc.
 # * ``PYTHONDONTWRITEBYTECODE`` + ``PYTHONUNBUFFERED`` are standard hygiene
 #   for containerized Python: no .pyc on disk, logs flushed immediately.
 ###############################################################################
 
-ARG PYTHON_VERSION=3.13
+ARG PYTHON_VERSION=3.9
 
 # ----- builder stage ---------------------------------------------------------
 FROM python:${PYTHON_VERSION}-slim AS builder

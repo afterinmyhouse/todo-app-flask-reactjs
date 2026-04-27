@@ -1,11 +1,13 @@
 from __future__ import annotations
 
+from typing import Optional
+
 from pymongo import MongoClient
 from pymongo.database import Database
 
 from config import Config
 
-_client: MongoClient | None = None
+_client: Optional[MongoClient] = None
 
 
 def get_mongo_client() -> MongoClient:

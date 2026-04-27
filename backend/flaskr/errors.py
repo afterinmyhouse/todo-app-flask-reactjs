@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Optional
+
 from flask_smorest import abort as smorest_abort
 
 
@@ -30,7 +32,7 @@ def api_abort(
     http_status: int,
     error_code: str,
     message: str,
-    details: dict | None = None,
+    details: Optional[dict] = None,
 ) -> None:
     """Raise HTTPException consumed by :class:`TodoAppApi` into the standard `error` JSON envelope."""
     smorest_abort(

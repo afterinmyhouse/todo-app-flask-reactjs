@@ -18,7 +18,7 @@ Design notes (kept intentionally small and dependency-free):
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Optional
 
 import pytest
 from bson import ObjectId
@@ -52,7 +52,7 @@ class FakeCollection:
     def _matches(self, doc: dict, query: dict) -> bool:
         return all(doc.get(key) == value for key, value in query.items())
 
-    def find_one(self, query: dict) -> dict | None:
+    def find_one(self, query: dict) -> Optional[dict]:
         for doc in self._docs:
             if self._matches(doc, query):
                 return doc
@@ -117,7 +117,7 @@ def fake_db(monkeypatch):
 def auth_header(app):
     """Build an ``Authorization: Bearer <jwt>`` header. Defaults to a valid ObjectId subject."""
 
-    def _build(user_id: str | None = None) -> dict[str, str]:
+    def _build(user_id: Optional[str] = None) -> dict[str, str]:
         identity = user_id if user_id is not None else str(ObjectId())
         with app.app_context():
             token = create_access_token(identity=identity)
