@@ -3,15 +3,21 @@ import { getEntitySearchAPI } from "@/services/api/search";
 
 const SEARCH_INTENT = /^\s*(search|find)\s+(.+)$/i;
 
+/** Keep in sync with backend `SearchController` min/max query length. */
+export const ENTITY_SEARCH_QUERY_MIN_LEN = 2;
+export const ENTITY_SEARCH_QUERY_MAX_LEN = 120;
+
 /**
  * If the user message is a workspace search command, returns the trimmed query
- * (2–120 chars) or null. Parsed entirely on the client; no PII is logged here.
+ * or null. Bounds match `GET /api/v1/search` (`ENTITY_SEARCH_QUERY_*_LEN`).
  */
 export function parseEntitySearchQuery(message: string): string | null {
   const m = message.trim().match(SEARCH_INTENT);
   const raw = m?.[2]?.trim() ?? "";
-  if (raw.length < 2) return null;
-  return raw.length > 120 ? raw.slice(0, 120) : raw;
+  if (raw.length < ENTITY_SEARCH_QUERY_MIN_LEN) return null;
+  return raw.length > ENTITY_SEARCH_QUERY_MAX_LEN
+    ? raw.slice(0, ENTITY_SEARCH_QUERY_MAX_LEN)
+    : raw;
 }
 
 export async function fetchEntitySearch(
