@@ -19,6 +19,16 @@ def create_app(test_config=None):
     else:
         app.config.from_object(test_config)
 
+    # Fail closed if signing material is missing or too short (non-test only).
+    # See docs/security_review.md — weak/absent JWT_SECRET_KEY allows token forgery.
+    jwt_secret = app.config.get("JWT_SECRET_KEY")
+    if not app.config.get("TESTING"):
+        if not jwt_secret or len(str(jwt_secret).strip()) < 32:
+            raise RuntimeError(
+                "JWT_SECRET_KEY must be set to a strong value (at least 32 characters). "
+                'Generate one with: python -c "import secrets; print(secrets.token_urlsafe(32))"'
+            )
+
     api.init_app(app)
     cors.init_app(app)
     jwt.init_app(app)
