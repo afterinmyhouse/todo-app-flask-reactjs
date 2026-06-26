@@ -12,12 +12,8 @@ export const DashboardRoot = () => {
   const navigate = useNavigate();
   const { isLoggedIn, token, logout } = useAuthStore();
 
-  if (!isLoggedIn) {
-    return <Navigate to="/" />;
-  }
-
   useEffect(() => {
-    if (!token) return;
+    if (!isLoggedIn || !token) return;
     fetchCurrentUser().catch((err) => {
       const status = err instanceof AxiosError ? err.response?.status : undefined;
       if (status === 401) {
@@ -25,9 +21,13 @@ export const DashboardRoot = () => {
         navigate("/", { replace: true });
       }
     });
-  }, [token, logout, navigate]);
+  }, [isLoggedIn, token, logout, navigate]);
 
   useSEO("Dashboard | TodoApp");
+
+  if (!isLoggedIn) {
+    return <Navigate to="/" />;
+  }
 
   return (
     <>

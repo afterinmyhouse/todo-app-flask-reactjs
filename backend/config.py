@@ -6,9 +6,10 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 
 load_dotenv(os.path.join(basedir, ".env"))
 
-# Used only by DevelopmentConfig when JWT_SECRET_KEY is not set in the environment.
-# Never deploy with this value — set JWT_SECRET_KEY in .env or your host secrets manager.
+# Historical placeholders that must never be accepted as signing material.
 _DEV_JWT_FALLBACK = "local-dev-insecure-set-JWT_SECRET_KEY-in-env-for-real-deployments"
+_K8S_JWT_PLACEHOLDER = "placeholder-replace-via-kubectl-create-secret"
+KNOWN_WEAK_JWT_SECRETS = frozenset({_DEV_JWT_FALLBACK, _K8S_JWT_PLACEHOLDER})
 
 
 class Config(object):
@@ -29,11 +30,7 @@ class DevelopmentConfig(Config):
     SQLALCHEMY_DATABASE_URI = "sqlite:///" + os.path.join(basedir, "data.db")
 
     _jwt_from_env = (os.getenv("JWT_SECRET_KEY") or "").strip()
-    # Local `flask run`: create_app requires a 32+ char signing key. If .env is missing or
-    # shorter, use a fixed dev default (replace with secrets.token_urlsafe(32) for staging).
-    JWT_SECRET_KEY = (
-        _jwt_from_env if len(_jwt_from_env) >= 32 else _DEV_JWT_FALLBACK
-    )
+    JWT_SECRET_KEY = _jwt_from_env or None
 
 
 class TestConfig(Config):
