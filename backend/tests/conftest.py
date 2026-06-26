@@ -154,7 +154,7 @@ class FakeDb:
 def app() -> Any:
     class _TestConfig(TestConfig):
         TESTING = True
-        JWT_SECRET_KEY = "test-secret"
+        JWT_SECRET_KEY = "test-secret-with-at-least-32-characters"
 
     return create_app(_TestConfig)
 
