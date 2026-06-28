@@ -10,7 +10,7 @@
     2. Builds the backend + frontend Docker images locally.
     3. Loads those images into the kind cluster's node (no registry).
     4. Applies all manifests via ``kubectl apply -k k8s``.
-    5. Replaces the placeholder JWT secret with a freshly generated one
+    5. Creates the JWT secret with a freshly generated value
        (pass -JwtSecret to override).
     6. Waits for all Deployments to become Available, then prints the
        URLs the app is reachable on.
@@ -97,7 +97,7 @@ kind load docker-image --name $clusterName todoapp-frontend:local | Out-Host
 Write-Host "[k8s-up] Applying manifests"
 kubectl apply -k (Join-Path $repoRoot "k8s") | Out-Host
 
-# --- 4. Real JWT secret -------------------------------------------------------
+# --- 4. JWT secret ------------------------------------------------------------
 if (-not $JwtSecret) {
   $JwtSecret = python -c "import secrets; print(secrets.token_hex(32))"
   if (-not $JwtSecret) {
