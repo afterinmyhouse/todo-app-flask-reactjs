@@ -14,7 +14,7 @@ cloud credentials.
 | [`k8s/kind-cluster.yaml`](../k8s/kind-cluster.yaml) | kind cluster definition with host port mappings for NodePort 30050/30080. |
 | [`k8s/namespace.yaml`](../k8s/namespace.yaml) | `todoapp` namespace. |
 | [`k8s/mongo.yaml`](../k8s/mongo.yaml) | MongoDB Deployment + PVC + ClusterIP Service. |
-| [`k8s/backend.yaml`](../k8s/backend.yaml) | Flask API: ConfigMap, Secret template, Deployment (2 replicas, non-root, probes, resource limits), NodePort Service (30050). |
+| [`k8s/backend.yaml`](../k8s/backend.yaml) | Flask API: ConfigMap, Deployment (2 replicas, non-root, probes, resource limits), NodePort Service (30050). |
 | [`k8s/frontend.yaml`](../k8s/frontend.yaml) | Vite + nginx: Deployment (2 replicas, probes, resource limits), NodePort Service (30080). |
 | [`k8s/kustomization.yaml`](../k8s/kustomization.yaml) | Aggregates everything for `kubectl apply -k k8s`. |
 | [`scripts/k8s-up.ps1`](../scripts/k8s-up.ps1) | End-to-end bring-up: create cluster → build → load → apply → wait. |
@@ -120,9 +120,9 @@ kubectl --context kind-todoapp -n todoapp \
   wipes it explicitly.
 - **Config vs. secrets**: non-secret env (Mongo URI, DB name, port)
   lives in `backend-config` ConfigMap; the JWT signing key lives in
-  `backend-secrets` Secret. The committed Secret has a placeholder
-  value so `kubectl apply -k` succeeds on a fresh cluster; the
-  bring-up script immediately upserts a real random value.
+  `backend-secrets` Secret. The Secret is not committed with a
+  placeholder value; the bring-up script creates it with a real random
+  value before the backend is considered ready.
 
 ## Teardown
 
