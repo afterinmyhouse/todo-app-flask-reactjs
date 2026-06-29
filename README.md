@@ -138,8 +138,7 @@ $ . venv/bin/activate
 3. Create an .env file and add an environment variable for JWT creation:
 
 ```shell
-# This is an example
-JWT_SECRET_KEY="c7d57142e46f169ce9dbeb8d96603e46"
+python -c "import secrets; print('JWT_SECRET_KEY=' + secrets.token_hex(32))"
 ```
 
 4. Now you can start running the server:
@@ -243,7 +242,7 @@ You can build and run either image standalone without Compose:
 # Backend — requires a reachable MongoDB URL
 docker build -t todoapp-backend ./backend
 docker run --rm -p 5000:5000 \
-  -e JWT_SECRET_KEY=dev-secret-change-me \
+  -e JWT_SECRET_KEY="$(python -c 'import secrets; print(secrets.token_hex(32))')" \
   -e MONGO_URI=mongodb://host.docker.internal:27017 \
   todoapp-backend
 

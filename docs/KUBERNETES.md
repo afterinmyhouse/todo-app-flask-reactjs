@@ -47,10 +47,11 @@ The script will:
    `docker build` (use `-SkipBuild` to reuse existing images).
 3. `kind load docker-image` both images into the cluster node so no
    registry is needed.
-4. `kubectl apply -k k8s` to create every resource.
-5. Generate a random `JWT_SECRET_KEY` and upsert the `backend-secrets`
-   Secret with it, then `kubectl rollout restart deployment/backend`
-   so the new value is picked up.
+4. Generate a random `JWT_SECRET_KEY` and upsert the `backend-secrets`
+   Secret.
+5. `kubectl apply -k k8s` to create every resource, then
+   `kubectl rollout restart deployment/backend` so an existing backend
+   picks up the current Secret value.
 6. Wait for all Deployments to become `Available` and print the URLs.
 
 Override the JWT secret:
@@ -120,9 +121,9 @@ kubectl --context kind-todoapp -n todoapp \
   wipes it explicitly.
 - **Config vs. secrets**: non-secret env (Mongo URI, DB name, port)
   lives in `backend-config` ConfigMap; the JWT signing key lives in
-  `backend-secrets` Secret. The committed Secret has a placeholder
-  value so `kubectl apply -k` succeeds on a fresh cluster; the
-  bring-up script immediately upserts a real random value.
+  `backend-secrets` Secret. The Secret is created by the bring-up
+  script before the backend Deployment is applied; do not commit or
+  reuse placeholder JWT signing keys.
 
 ## Teardown
 

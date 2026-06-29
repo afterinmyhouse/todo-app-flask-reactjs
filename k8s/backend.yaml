@@ -19,24 +19,6 @@ data:
   MONGO_DB_NAME: "todoapp"
   PORT: "5000"
 ---
-# Template secret. The bring-up script overrides this by creating a
-# secret with a real JWT_SECRET_KEY using ``kubectl create secret``.
-# Keeping a committed placeholder documents the expected shape and
-# means ``kubectl apply -k k8s`` works on a fresh cluster (the script
-# then replaces this Secret in-place).
-apiVersion: v1
-kind: Secret
-metadata:
-  name: backend-secrets
-  namespace: todoapp
-  labels:
-    app.kubernetes.io/name: backend
-    app.kubernetes.io/component: api
-    app.kubernetes.io/part-of: todoapp
-type: Opaque
-stringData:
-  JWT_SECRET_KEY: "placeholder-replace-via-kubectl-create-secret"
----
 apiVersion: apps/v1
 kind: Deployment
 metadata:
