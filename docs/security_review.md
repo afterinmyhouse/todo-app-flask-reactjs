@@ -85,23 +85,25 @@
 
 ## Implemented Mitigation (Issue #1)
 
-**Goal:** Fail closed in non-test environments unless a sufficiently long `JWT_SECRET_KEY` is configured, so the application never runs in a dangerously ambiguous signing state.
+**Goal:** Fail closed in non-test environments unless a sufficiently long, private `JWT_SECRET_KEY` is configured, so the application never runs with missing, weak, or publicly known signing material.
 
 **Steps (already applied in codebase):**
 
 1. After `app.config.from_object(...)`, evaluate `app.config.get("TESTING")` and `app.config.get("JWT_SECRET_KEY")`.
 2. If **not** in `TESTING` mode, require a non-empty secret whose string length is at least **32** characters (aligned with common HMAC key guidance).
-3. If the check fails, raise `RuntimeError` with an actionable message pointing to `secrets.token_urlsafe(32)`.
-4. Keep tests passing by ensuring the test app config sets `TESTING = True` (existing `_TestConfig` in `conftest.py`) so short dev secrets like `test-secret` remain valid only under tests.
+3. Reject JWT secrets that are committed examples or deployment placeholders, even if they satisfy the length check.
+4. If the check fails, raise `RuntimeError` with an actionable message pointing to `secrets.token_urlsafe(32)`.
+5. Keep tests passing by ensuring the test app config sets `TESTING = True` (existing `_TestConfig` in `conftest.py`) so short dev secrets like `test-secret` remain valid only under tests.
 
 **Reference implementation** (`backend/flaskr/__init__.py`):
 
 ```python
-    jwt_secret = app.config.get("JWT_SECRET_KEY")
+    jwt_secret = (str(app.config.get("JWT_SECRET_KEY") or "")).strip()
     if not app.config.get("TESTING"):
-        if not jwt_secret or len(str(jwt_secret).strip()) < 32:
+        if len(jwt_secret) < 32 or jwt_secret in _UNSAFE_JWT_SECRETS:
             raise RuntimeError(
-                "JWT_SECRET_KEY must be set to a strong value (at least 32 characters). "
+                "JWT_SECRET_KEY must be set to a strong private value "
+                "(at least 32 characters, not a committed placeholder). "
                 'Generate one with: python -c "import secrets; print(secrets.token_urlsafe(32))"'
             )
 ```
@@ -109,7 +111,7 @@
 **Operational checklist:**
 
 1. Add `JWT_SECRET_KEY` to `.env` (never commit `.env`).
-2. Use a cryptographically random value (≥ 32 characters).
+2. Use a cryptographically random private value (≥ 32 characters); never copy committed examples or placeholders.
 3. Rotate the key if leaked; understand rotation invalidates all outstanding JWTs until clients re-authenticate.
 
 ---

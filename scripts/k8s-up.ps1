@@ -9,9 +9,9 @@
        the NodePort services.
     2. Builds the backend + frontend Docker images locally.
     3. Loads those images into the kind cluster's node (no registry).
-    4. Applies all manifests via ``kubectl apply -k k8s``.
-    5. Replaces the placeholder JWT secret with a freshly generated one
+    4. Creates or updates the backend JWT secret with a freshly generated one
        (pass -JwtSecret to override).
+    5. Applies all manifests via ``kubectl apply -k k8s``.
     6. Waits for all Deployments to become Available, then prints the
        URLs the app is reachable on.
 
@@ -93,11 +93,7 @@ Write-Host "[k8s-up] Loading images into kind"
 kind load docker-image --name $clusterName todoapp-backend:local  | Out-Host
 kind load docker-image --name $clusterName todoapp-frontend:local | Out-Host
 
-# --- 3. Manifests -------------------------------------------------------------
-Write-Host "[k8s-up] Applying manifests"
-kubectl apply -k (Join-Path $repoRoot "k8s") | Out-Host
-
-# --- 4. Real JWT secret -------------------------------------------------------
+# --- 3. Real JWT secret -------------------------------------------------------
 if (-not $JwtSecret) {
   $JwtSecret = python -c "import secrets; print(secrets.token_hex(32))"
   if (-not $JwtSecret) {
@@ -105,7 +101,10 @@ if (-not $JwtSecret) {
     $JwtSecret = ([Guid]::NewGuid().ToString("N") + [Guid]::NewGuid().ToString("N"))
   }
 }
-Write-Host "[k8s-up] Patching backend-secrets with a fresh JWT signing key"
+Write-Host "[k8s-up] Ensuring namespace exists"
+kubectl apply -f (Join-Path $repoRoot "k8s/namespace.yaml") | Out-Host
+
+Write-Host "[k8s-up] Creating backend-secrets with a fresh JWT signing key"
 # ``create --dry-run=client -o yaml | apply -f -`` is the canonical
 # idempotent "upsert" pattern for Kubernetes secrets.
 kubectl create secret generic backend-secrets `
@@ -113,6 +112,10 @@ kubectl create secret generic backend-secrets `
   --from-literal=JWT_SECRET_KEY=$JwtSecret `
   --dry-run=client -o yaml `
   | kubectl apply -f - | Out-Host
+
+# --- 4. Manifests -------------------------------------------------------------
+Write-Host "[k8s-up] Applying manifests"
+kubectl apply -k (Join-Path $repoRoot "k8s") | Out-Host
 
 # Bounce the backend pods so they pick up the new secret immediately.
 kubectl rollout restart deployment/backend --namespace $namespace | Out-Host
