@@ -1,5 +1,5 @@
 from flask import Flask
-from config import DevelopmentConfig
+from config import DevelopmentConfig, INSECURE_JWT_SECRET_VALUES
 from flaskr.extensions import api, cors, jwt
 
 from flaskr.routes.auth_route import bp as auth_route
@@ -24,9 +24,13 @@ def create_app(test_config=None):
     # See docs/security_review.md — weak/absent JWT_SECRET_KEY allows token forgery.
     jwt_secret = app.config.get("JWT_SECRET_KEY")
     if not app.config.get("TESTING"):
-        if not jwt_secret or len(str(jwt_secret).strip()) < 32:
+        normalized_jwt_secret = str(jwt_secret or "").strip()
+        if (
+            len(normalized_jwt_secret) < 32
+            or normalized_jwt_secret in INSECURE_JWT_SECRET_VALUES
+        ):
             raise RuntimeError(
-                "JWT_SECRET_KEY must be set to a strong value (at least 32 characters). "
+                "JWT_SECRET_KEY must be set to a strong unique value (at least 32 characters). "
                 'Generate one with: python -c "import secrets; print(secrets.token_urlsafe(32))"'
             )
 
