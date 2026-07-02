@@ -10,7 +10,7 @@
     2. Builds the backend + frontend Docker images locally.
     3. Loads those images into the kind cluster's node (no registry).
     4. Applies all manifests via ``kubectl apply -k k8s``.
-    5. Replaces the placeholder JWT secret with a freshly generated one
+    5. Creates the JWT secret with a freshly generated signing key
        (pass -JwtSecret to override).
     6. Waits for all Deployments to become Available, then prints the
        URLs the app is reachable on.
@@ -105,7 +105,7 @@ if (-not $JwtSecret) {
     $JwtSecret = ([Guid]::NewGuid().ToString("N") + [Guid]::NewGuid().ToString("N"))
   }
 }
-Write-Host "[k8s-up] Patching backend-secrets with a fresh JWT signing key"
+Write-Host "[k8s-up] Applying backend-secrets with a fresh JWT signing key"
 # ``create --dry-run=client -o yaml | apply -f -`` is the canonical
 # idempotent "upsert" pattern for Kubernetes secrets.
 kubectl create secret generic backend-secrets `
