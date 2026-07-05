@@ -120,9 +120,11 @@ kubectl --context kind-todoapp -n todoapp \
   wipes it explicitly.
 - **Config vs. secrets**: non-secret env (Mongo URI, DB name, port)
   lives in `backend-config` ConfigMap; the JWT signing key lives in
-  `backend-secrets` Secret. The committed Secret has a placeholder
-  value so `kubectl apply -k` succeeds on a fresh cluster; the
-  bring-up script immediately upserts a real random value.
+  `backend-secrets` Secret. The committed Secret has an intentionally
+  invalid placeholder value so `kubectl apply -k` succeeds on a fresh
+  cluster without ever running the backend on a public signing key; the
+  bring-up script immediately upserts a real random value and restarts
+  the backend pods.
 
 ## Teardown
 

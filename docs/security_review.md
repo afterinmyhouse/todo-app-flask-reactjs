@@ -85,12 +85,12 @@
 
 ## Implemented Mitigation (Issue #1)
 
-**Goal:** Fail closed in non-test environments unless a sufficiently long `JWT_SECRET_KEY` is configured, so the application never runs in a dangerously ambiguous signing state.
+**Goal:** Fail closed in non-test environments unless a sufficiently long, private `JWT_SECRET_KEY` is configured, so the application never runs in a dangerously ambiguous signing state.
 
 **Steps (already applied in codebase):**
 
 1. After `app.config.from_object(...)`, evaluate `app.config.get("TESTING")` and `app.config.get("JWT_SECRET_KEY")`.
-2. If **not** in `TESTING` mode, require a non-empty secret whose string length is at least **32** characters (aligned with common HMAC key guidance).
+2. If **not** in `TESTING` mode, require a non-empty secret whose string length is at least **32** characters (aligned with common HMAC key guidance) and reject committed placeholder/example values.
 3. If the check fails, raise `RuntimeError` with an actionable message pointing to `secrets.token_urlsafe(32)`.
 4. Keep tests passing by ensuring the test app config sets `TESTING = True` (existing `_TestConfig` in `conftest.py`) so short dev secrets like `test-secret` remain valid only under tests.
 
@@ -99,11 +99,9 @@
 ```python
     jwt_secret = app.config.get("JWT_SECRET_KEY")
     if not app.config.get("TESTING"):
-        if not jwt_secret or len(str(jwt_secret).strip()) < 32:
-            raise RuntimeError(
-                "JWT_SECRET_KEY must be set to a strong value (at least 32 characters). "
-                'Generate one with: python -c "import secrets; print(secrets.token_urlsafe(32))"'
-            )
+        normalized_secret = str(jwt_secret or "").strip()
+        if len(normalized_secret) < 32 or normalized_secret in _INSECURE_JWT_SECRETS:
+            raise RuntimeError(...)
 ```
 
 **Operational checklist:**
