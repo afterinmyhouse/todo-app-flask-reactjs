@@ -47,7 +47,8 @@ The script will:
    `docker build` (use `-SkipBuild` to reuse existing images).
 3. `kind load docker-image` both images into the cluster node so no
    registry is needed.
-4. `kubectl apply -k k8s` to create every resource.
+4. `kubectl apply -k k8s` to create every resource with a deliberately
+   invalid placeholder JWT secret.
 5. Generate a random `JWT_SECRET_KEY` and upsert the `backend-secrets`
    Secret with it, then `kubectl rollout restart deployment/backend`
    so the new value is picked up.

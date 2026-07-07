@@ -12,6 +12,15 @@ from flaskr.routes.task_comment_route import bp as task_comment_route
 from flaskr.routes.search_route import bp as search_route
 
 
+UNSAFE_JWT_SECRET_KEYS = frozenset(
+    {
+        "local-dev-insecure-set-JWT_SECRET_KEY-in-env-for-real-deployments",
+        "placeholder-replace-via-kubectl-create-secret",
+        "c7d57142e46f169ce9dbeb8d96603e46",
+    }
+)
+
+
 def create_app(test_config=None):
     app = Flask(__name__)
 
@@ -20,13 +29,19 @@ def create_app(test_config=None):
     else:
         app.config.from_object(test_config)
 
-    # Fail closed if signing material is missing or too short (non-test only).
+    # Fail closed if signing material is missing, too short, or publicly committed.
     # See docs/security_review.md — weak/absent JWT_SECRET_KEY allows token forgery.
     jwt_secret = app.config.get("JWT_SECRET_KEY")
     if not app.config.get("TESTING"):
-        if not jwt_secret or len(str(jwt_secret).strip()) < 32:
+        normalized_secret = str(jwt_secret or "").strip()
+        if len(normalized_secret) < 32:
             raise RuntimeError(
                 "JWT_SECRET_KEY must be set to a strong value (at least 32 characters). "
+                'Generate one with: python -c "import secrets; print(secrets.token_urlsafe(32))"'
+            )
+        if normalized_secret in UNSAFE_JWT_SECRET_KEYS:
+            raise RuntimeError(
+                "JWT_SECRET_KEY must not use a committed example or placeholder value. "
                 'Generate one with: python -c "import secrets; print(secrets.token_urlsafe(32))"'
             )
 
