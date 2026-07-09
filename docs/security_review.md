@@ -85,23 +85,30 @@
 
 ## Implemented Mitigation (Issue #1)
 
-**Goal:** Fail closed in non-test environments unless a sufficiently long `JWT_SECRET_KEY` is configured, so the application never runs in a dangerously ambiguous signing state.
+**Goal:** Fail closed in non-test environments unless a sufficiently long, non-placeholder `JWT_SECRET_KEY` is configured, so the application never runs in a dangerously ambiguous signing state.
 
 **Steps (already applied in codebase):**
 
 1. After `app.config.from_object(...)`, evaluate `app.config.get("TESTING")` and `app.config.get("JWT_SECRET_KEY")`.
 2. If **not** in `TESTING` mode, require a non-empty secret whose string length is at least **32** characters (aligned with common HMAC key guidance).
-3. If the check fails, raise `RuntimeError` with an actionable message pointing to `secrets.token_urlsafe(32)`.
-4. Keep tests passing by ensuring the test app config sets `TESTING = True` (existing `_TestConfig` in `conftest.py`) so short dev secrets like `test-secret` remain valid only under tests.
+3. Reject known committed example or placeholder values even when they meet the length check.
+4. If the check fails, raise `RuntimeError` with an actionable message pointing to `secrets.token_urlsafe(32)`.
+5. Keep tests passing by ensuring the test app config sets `TESTING = True` (existing `_TestConfig` in `conftest.py`) so short dev secrets like `test-secret` remain valid only under tests.
 
 **Reference implementation** (`backend/flaskr/__init__.py`):
 
 ```python
     jwt_secret = app.config.get("JWT_SECRET_KEY")
     if not app.config.get("TESTING"):
-        if not jwt_secret or len(str(jwt_secret).strip()) < 32:
+        normalized_secret = str(jwt_secret or "").strip()
+        if len(normalized_secret) < 32:
             raise RuntimeError(
                 "JWT_SECRET_KEY must be set to a strong value (at least 32 characters). "
+                'Generate one with: python -c "import secrets; print(secrets.token_urlsafe(32))"'
+            )
+        if normalized_secret in UNSAFE_JWT_SECRET_KEYS:
+            raise RuntimeError(
+                "JWT_SECRET_KEY must not use a committed example or placeholder value. "
                 'Generate one with: python -c "import secrets; print(secrets.token_urlsafe(32))"'
             )
 ```

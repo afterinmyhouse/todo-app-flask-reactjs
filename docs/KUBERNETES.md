@@ -56,7 +56,8 @@ The script will:
 Override the JWT secret:
 
 ```powershell
-pwsh ./scripts/k8s-up.ps1 -JwtSecret "my-own-hex-here"
+$secret = python -c "import secrets; print(secrets.token_hex(32))"
+pwsh ./scripts/k8s-up.ps1 -JwtSecret $secret
 ```
 
 ## Accessing the app
