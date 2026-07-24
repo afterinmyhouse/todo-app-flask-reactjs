@@ -47,10 +47,9 @@ def test_testing_config_can_use_short_test_secret():
     assert app.config["JWT_SECRET_KEY"] == "test-secret"
 
 
-def test_development_config_does_not_supply_public_jwt_fallback():
-    assert getattr(DevelopmentConfig, "JWT_SECRET_KEY", None) in (
-        None,
-        "",
-    ) or DevelopmentConfig.JWT_SECRET_KEY == __import__("os").getenv(
-        "JWT_SECRET_KEY"
-    )
+def test_development_config_does_not_define_committed_jwt_fallback():
+    import config as config_module
+
+    assert not hasattr(config_module, "_DEV_JWT_FALLBACK")
+    # DevelopmentConfig must inherit env-only JWT_SECRET_KEY (no hardcoded fallback).
+    assert "JWT_SECRET_KEY" not in DevelopmentConfig.__dict__
