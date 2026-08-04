@@ -8,11 +8,12 @@ import { useAuthStore } from "@/stores/auth-store";
 export const LandingRoot = () => {
   const { isLoggedIn } = useAuthStore();
 
+  // Hooks must run unconditionally — auth redirects below must not change hook order.
+  useSEO("TodoApp");
+
   if (isLoggedIn) {
     return <Navigate to="/dashboard" />;
   }
-
-  useSEO("TodoApp");
 
   return (
     <>
