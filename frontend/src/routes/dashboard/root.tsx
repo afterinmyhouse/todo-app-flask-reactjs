@@ -12,10 +12,7 @@ export const DashboardRoot = () => {
   const navigate = useNavigate();
   const { isLoggedIn, token, logout } = useAuthStore();
 
-  if (!isLoggedIn) {
-    return <Navigate to="/" />;
-  }
-
+  // Hooks must run unconditionally — auth redirects below must not change hook order.
   useEffect(() => {
     if (!token) return;
     fetchCurrentUser().catch((err) => {
@@ -28,6 +25,10 @@ export const DashboardRoot = () => {
   }, [token, logout, navigate]);
 
   useSEO("Dashboard | TodoApp");
+
+  if (!isLoggedIn) {
+    return <Navigate to="/" />;
+  }
 
   return (
     <>
