@@ -4,14 +4,14 @@ from bson import ObjectId
 from bson.errors import InvalidId
 from flask_jwt_extended import get_jwt_identity
 
+from flaskr import mongo
 from flaskr.errors import ErrorCode, api_abort
-from flaskr.mongo import get_db
 
 
 class TaskController:
     @staticmethod
     def get_all_on_user():
-        db = get_db()
+        db = mongo.get_db()
         user_id = get_jwt_identity()
         try:
             user_oid = ObjectId(user_id)
@@ -23,22 +23,25 @@ class TaskController:
                 details={"field": "sub"},
             )
 
+        # Keys must match TaskSchema field names (not data_key aliases).
+        # Dumping camelCase here drops tagName/createdAt, which blanks
+        # dashboard tag badges and makes tag filters match nothing.
         tasks = list(db.tasks.find({"user_id": user_oid}))
         return [
             {
                 "id": str(t["_id"]),
                 "title": t["title"],
-                "content": t["content"],
+                "content": t.get("content", ""),
                 "status": t["status"],
-                "createdAt": t["created_at"],
-                "tagName": t["tag_name"],
+                "created_at": t["created_at"],
+                "tag_name": t.get("tag_name"),
             }
             for t in tasks
         ]
 
     @staticmethod
     def create(data):
-        db = get_db()
+        db = mongo.get_db()
         user_id = get_jwt_identity()
         try:
             user_oid = ObjectId(user_id)
@@ -73,7 +76,7 @@ class TaskController:
 
     @staticmethod
     def update(data, task_id):
-        db = get_db()
+        db = mongo.get_db()
         user_id = get_jwt_identity()
         try:
             user_oid = ObjectId(user_id)
@@ -91,7 +94,7 @@ class TaskController:
 
     @staticmethod
     def delete(task_id):
-        db = get_db()
+        db = mongo.get_db()
         user_id = get_jwt_identity()
         try:
             user_oid = ObjectId(user_id)
